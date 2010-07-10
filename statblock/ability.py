@@ -31,7 +31,7 @@ class Strength(Ability):
         return "Strength"
     
     def declare_dependencies(self):
-        self.modified_component_ids.add("MeleeAttack")
+        self.modified_component_ids.add("BaseMeleeAttack")
         
 
 class Dexterity(Ability):
@@ -43,7 +43,7 @@ class Dexterity(Ability):
         self.modified_component_ids = set([
             "Initiative",
             "ArmorClass",
-            "RangedAttack",
+            "BaseRangedAttack",
             "Reflex"
         ])
         

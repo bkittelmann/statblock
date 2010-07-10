@@ -222,20 +222,28 @@ class BaseAttack(Component):
         return "BaseAttack"
     
     def declare_dependencies(self):
-        self.modified_component_ids.add("MeleeAttack")
-        self.modified_component_ids.add("RangedAttack")
+        self.modified_component_ids.add("BaseMeleeAttack")
+        self.modified_component_ids.add("BaseRangedAttack")
 
     
-class MeleeAttack(Component):
+class AttackModifierGroup(object):
     
-    def get_provider_id(self):
-        return "MeleeAttack"   
+    def __init__(self):
+        self.base = None
+        self.melee = None
+        self.ranged = None
     
 
-class RangedAttack(Component):
+class BaseMeleeAttack(Component):
     
     def get_provider_id(self):
-        return "RangedAttack"
+        return "BaseMeleeAttack"   
+    
+
+class BaseRangedAttack(Component):
+    
+    def get_provider_id(self):
+        return "BaseRangedAttack"
     
     
 class ArmorClass(Component):
@@ -255,13 +263,17 @@ class Character(Bus, AbstractComponent):
         self.speed = 30
         self._size = self.add(Size.MEDIUM)
 
-        self.base_attack = self.add(BaseAttack(0))
-        self.melee_attack = self.add(MeleeAttack(0))
-        self.ranged_attack = self.add(RangedAttack(0))
-        self.armor_class = self.add(ArmorClass(10))
-
         self.abilities = self.add(AbilityGroup())
         self.saving_throws = self.add(SavingThrowGroup())
+        self.armor_class = self.add(ArmorClass(10))
+        
+        self.attack = AttackModifierGroup()
+        self.attack.base = self.add(BaseAttack(0))
+        self.attack.melee = self.add(BaseMeleeAttack(0))
+        self.attack.ranged = self.add(BaseRangedAttack(0))
+        
+#        self.melee = [Longsword()]
+#        self.ranged = [Longbow()]
         
         
     @property

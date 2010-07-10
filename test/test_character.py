@@ -8,11 +8,11 @@ def test_strength_affected():
     
     guard.abilities.strength = 16
     assert guard.abilities.strength.value == 16
-    assert guard.melee_attack.value == 3
+    assert guard.attack.melee.value == 3
     
     guard.abilities.strength.initial -= 4
     assert guard.abilities.strength.value == 12
-    assert guard.melee_attack.value == 1
+    assert guard.attack.melee.value == 1
     
     
 def test_dexterity_affected():
@@ -21,7 +21,7 @@ def test_dexterity_affected():
     
     guard.abilities.dexterity = 8
     assert guard.armor_class.value == 9
-    assert guard.ranged_attack.value == -1
+    assert guard.attack.ranged.value == -1
     assert guard.saving_throws.reflex.value == -1
 
     
@@ -49,12 +49,12 @@ def test_base_attack():
     guard = Character()
     guard.wire()
     
-    guard.base_attack.value += 1
+    guard.attack.base.value += 1
     guard.abilities.strength = 15
     guard.abilities.dexterity = 12
     
-    assert guard.melee_attack.value == 3
-    assert guard.ranged_attack.value == 2
+    assert guard.attack.melee.value == 3
+    assert guard.attack.ranged.value == 2
     
 
 def test_size_effects():
@@ -62,11 +62,11 @@ def test_size_effects():
     guard.wire()
     
     guard.size = Size.LARGE
-    assert guard.base_attack.value == -1
+    assert guard.attack.base.value == -1
     assert guard.armor_class.value == 9
 
     guard.size = Size.MEDIUM
-    assert guard.base_attack.value == 0
+    assert guard.attack.base.value == 0
     assert guard.armor_class.value == 10
  
     
