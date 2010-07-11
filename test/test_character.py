@@ -1,4 +1,11 @@
-from statblock.character import Character, Size
+from statblock.character import Character
+from statblock.character import Size
+from statblock.weapon import Longsword
+from statblock.dice import d8
+from statblock.dice import Die
+from statblock.feat import WeaponFocus
+from statblock.feat import WeaponFocus
+
 import py
 
 
@@ -69,7 +76,21 @@ def test_size_effects():
     assert guard.attack.base.value == 0
     assert guard.armor_class.value == 10
  
+ 
+def test_adding_a_weapon():
+    guard = Character()
+    guard.abilities.strength.value = 16
+    guard.wire()
+    
+    sword = Longsword()
+    guard.weapons.put(sword)
+    guard.add(WeaponFocus())
+    guard.wire()
+    
+    assert sword.attack.value == 4
+    assert sword.damage.default == d8
+    assert sword.damage.actual() == d8+3
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-k", "test_character", "-s"])
+    py.cmdline.pytest(["-k", "weapon", "-s"])

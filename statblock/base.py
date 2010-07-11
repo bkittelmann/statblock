@@ -125,7 +125,7 @@ class AbstractComponent(object):
             self.bus.get(id).affects(self)
     
     def affects(self, other):
-        self.modified_component_ids.add(other.get_provider_id)
+        self.modified_component_ids.add(other.get_provider_id())
         other.update(self.bonus)
         
 

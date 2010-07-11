@@ -236,11 +236,19 @@ class AttackModifierGroup(object):
 
 class BaseMeleeAttack(Component):
     
+    def __init__(self, *args, **kwargs):
+        super(BaseMeleeAttack, self).__init__(*args, **kwargs)
+        self.bonus = ValueModifier(self)
+    
     def get_provider_id(self):
         return "BaseMeleeAttack"   
     
 
 class BaseRangedAttack(Component):
+    
+    def __init__(self, *args, **kwargs):
+        super(BaseRangedAttack, self).__init__(*args, **kwargs)
+        self.bonus = ValueModifier(self)
     
     def get_provider_id(self):
         return "BaseRangedAttack"
@@ -251,6 +259,25 @@ class ArmorClass(Component):
     def get_provider_id(self):
         return "ArmorClass"
 
+
+class WeaponsGroup(AbstractComponent):
+    
+    def __init__(self):
+        self._weapons = []
+    
+    def add(self):
+        for member in self._weapons:
+            self.bus.add(member)
+    
+    def wire(self):
+        for member in self._weapons:
+            member.wire()
+            
+    def put(self, weapon):
+        self._weapons.append(weapon)
+        self.add()
+        self.wire()
+        
 
 class Character(Bus, AbstractComponent):
     
@@ -272,7 +299,7 @@ class Character(Bus, AbstractComponent):
         self.attack.melee = self.add(BaseMeleeAttack(0))
         self.attack.ranged = self.add(BaseRangedAttack(0))
         
-#        self.melee = [Longsword()]
+        self.weapons = self.add(WeaponsGroup())
 #        self.ranged = [Longbow()]
         
         

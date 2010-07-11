@@ -15,4 +15,15 @@ class ImprovedInitiative(Component):
     def __init__(self):
         self.bonus = FeatModifier(+4, self)
         self.modified_component_ids.add("Initiative")
+        
+        
+class WeaponFocus(Component):
+    
+    def __init__(self):
+        super(WeaponFocus, self).__init__()
+        self.bonus = FeatModifier(+1, self)
+        
+    def declare_dependencies(self):
+        self.modified_component_ids.add("weapon/longsword/attack")
+        
     
