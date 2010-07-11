@@ -24,6 +24,7 @@ class WeaponFocus(Component):
         self.bonus = FeatModifier(+1, self)
         
     def declare_dependencies(self):
-        self.modified_component_ids.add("weapon/longsword/attack")
+        # at the moment that's longsword-specific... should take weapon name into account
+        self.modified_component_ids.add("weapon/longsword/melee/attack")
         
     

@@ -1,10 +1,9 @@
 from statblock.character import Character
 from statblock.character import Size
 from statblock.weapon import Longsword
-from statblock.dice import d8
-from statblock.dice import Die
+from statblock.dice import d4, d8
 from statblock.feat import WeaponFocus
-from statblock.feat import WeaponFocus
+from statblock.weapon import Dagger
 
 import py
 
@@ -80,16 +79,28 @@ def test_size_effects():
 def test_adding_a_weapon():
     guard = Character()
     guard.abilities.strength.value = 16
+    guard.abilities.dexterity.value = 13
     guard.wire()
     
     sword = Longsword()
+    dagger = Dagger()
     guard.weapons.put(sword)
+    guard.weapons.put(dagger)
     guard.add(WeaponFocus())
     guard.wire()
     
     assert sword.melee.attack.value == 4
     assert sword.melee.damage.default == d8
     assert sword.melee.damage.get_combined() == d8+3
+    assert sword.is_melee()
+    assert not sword.is_ranged()
+    
+    assert dagger.melee.attack.value == 3
+    assert dagger.is_ranged()
+    assert dagger.ranged.attack.value == 1
+    assert dagger.ranged.damage.get_combined() == d4 
+    
+    
     
 
 if __name__ == '__main__':
