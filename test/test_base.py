@@ -60,23 +60,6 @@ def test_bonusset_calculate_stackable():
     assert bset.calculate(2) == 6
     
 
-def xtest_bus_uses_several_modifiermaps():
-    bus = Bus()
-    bus.add(Initiative(0))
-    bus.add(Dexterity(14))
-    bus.add(ImprovedInitiative())
-    bus.wire()
-
-    ini = bus.get(Initiative)
-    dex = bus.get(Dexterity)
-    
-    assert dex.value == 14
-    assert ini.value == 6
-    assert ini.initial == 0
-    # we only have untyped bonuses
-    assert len(ini.modifiers.values()) == 1
-    
-
 def xtest_getting_at_game_feature_and_wire_it():
     t = Tumble(6)
     b = Balance(0)

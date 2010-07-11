@@ -87,10 +87,10 @@ def test_adding_a_weapon():
     guard.add(WeaponFocus())
     guard.wire()
     
-    assert sword.attack.value == 4
-    assert sword.damage.default == d8
-    assert sword.damage.actual() == d8+3
+    assert sword.melee.attack.value == 4
+    assert sword.melee.damage.default == d8
+    assert sword.melee.damage.get_combined() == d8+3
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-k", "weapon", "-s"])
+    py.cmdline.pytest(["-s", "test_character.py"])
