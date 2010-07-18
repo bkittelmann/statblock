@@ -63,19 +63,19 @@ def test_bonusset_calculate_stackable():
     
 
 def test_wiring_skills():
-    t = Tumble(6)
-    b = Balance(0)
+    tumble = Tumble(6)
+    balance = Balance(0)
     
-    bus = AbstractComponent()
-    bus.add(b)
-    bus.add(Initiative(0))
-    bus.add(Strength(8))
-    bus.add(Dexterity(14))
-    bus.add(Jump(0))
-    bus.add(t)
+    character = AbstractComponent()
+    character.add(balance)
+    character.add(Initiative(0))
+    character.add(Strength(8))
+    character.add(Dexterity(14))
+    character.add(Jump(0))
+    character.add(tumble)
     
-    assert t.value == 8
-    assert b.value == 4
+    assert tumble.value == 8
+    assert balance.value == 4
     
     
 def test_strength_repr():
