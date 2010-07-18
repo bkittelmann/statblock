@@ -1,22 +1,20 @@
-from statblock.base import AbstractComponent
-from statblock.ability import Dexterity
 import py
 
+from statblock.ability import Dexterity
 from statblock.ability import Strength
 
-from statblock.skill import Balance
-from statblock.skill import Tumble
-from statblock.skill import Jump
-
-from statblock.feat import FeatModifier
-from statblock.feat import ImprovedInitiative
-
-from statblock.base import Registry
+from statblock.base import AbstractComponent
 from statblock.base import Bonus
 from statblock.base import EnhancementModifier
 from statblock.base import ModifierSet
 
 from statblock.character import Initiative
+
+from statblock.feat import FeatModifier
+
+from statblock.skill import Balance
+from statblock.skill import Jump
+from statblock.skill import Tumble
 
 
 def test_bonus_stacks():

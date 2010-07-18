@@ -69,16 +69,13 @@ def test_adding_a_weapon():
     guard = Character()
     guard.abilities.strength.value = 16
     guard.abilities.dexterity.value = 13
-    guard.registry._actions.clear()
+    guard.registry.actions.clear()
     
     sword = Longsword()
     dagger = Dagger()
     guard.weapons.add(sword)
     guard.weapons.add(dagger)
     guard.add(WeaponFocus())
-    
-#    for component in guard.registry.components():
-#        print component.id()
     
     assert sword.melee.attack.value == 4
     assert sword.melee.damage.default == d8

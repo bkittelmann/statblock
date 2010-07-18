@@ -103,6 +103,14 @@ class Registry(object):
     def __init__(self):
         self._components = {}
         self._actions = set()
+
+    @property
+    def actions(self):
+        return self._actions
+
+    @property
+    def components(self):
+        return self._components.values()
         
     def set(self, component):
         if component.on_register(self):
@@ -113,14 +121,8 @@ class Registry(object):
     def get(self, component_id):
         return self._components[component_id]
     
-    def components(self):
-        return self._components.values()
-    
     def merge(self, other):
-        # if the other registry hasn't been initialized, it's None
-        if not other: 
-            return self
-        for component in other.components():
+        for component in other.components:
             self.set(component)
         self._actions.update(other._actions)
         return self
@@ -139,15 +141,6 @@ class Registry(object):
         # remove finished actions
         for action in remove_later:
             self._actions.remove(action)
-
-
-class NullRegistry(Registry):
-    
-    def set(self, component):
-        pass
-    
-    def get(self, component_id):
-        return None
     
 
 class ModifyOtherAction(object):
@@ -177,14 +170,11 @@ class DependsOnAction(object):
 class AbstractComponent(object):
     
     def __init__(self, id=None):
-        # TODO: Doesn't this make things much more complicated? 
-        # Maybe use Registry directly.
-        self._registry = NullRegistry()
+        self._registry = Registry()
         self._id = id
         self._components = []
         
     def add(self, component):
-        self._init_registry()
         self._components.append(component)
         self._registry.set(component)
         return component
@@ -197,8 +187,7 @@ class AbstractComponent(object):
         # which are only expressed as dependencies of its child
         # components. In this case we need to copy those over to
         # the new registry, otherwise they get erased.
-        if self.registry and self.registry._actions:
-            registry._actions.update(self.registry._actions)
+        registry.actions.update(self.registry.actions)
         self.registry = registry
         return True
     
@@ -211,10 +200,6 @@ class AbstractComponent(object):
         self._registry = new_registry
         for component in self._components:
             component.registry = new_registry
-    
-    def _init_registry(self):
-        if isinstance(self._registry, NullRegistry):
-            self._registry = Registry()
     
     def __repr__(self):
         return "<Component '%s'>" % self.id()
