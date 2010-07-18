@@ -97,72 +97,168 @@ class Modifiable(object):
 
 #--- basic registry architecture --------------------------------------
     
-class AbstractComponent(object):
+class Registry(object):
+    "A default registry that is more friendly to its clients"
     
     def __init__(self):
-        self.bus = None # Use a NullBus?
-        self.modified_component_ids = set()
-        self.affected_by_component_ids = set()
-        self.bonus = None
+        self._components = {}
+        self._actions = set()
         
-    def get_provider_id(self):
-        return self.__class__
+    def set(self, component):
+        if component.on_register(self):
+            self._actions.update(component.dependency_actions())
+            self._components[component.id()] = component
+        self.wire()
+            
+    def get(self, component_id):
+        return self._components[component_id]
     
-    # for adding child components - setting bus here?
-    def add(self):
-        pass
+    def components(self):
+        return self._components.values()
     
-    # to remove modifiers that haven been set elsewhere when this
-    # component is getting removed
-    def destroy(self):
-        for id in self.modified_component_ids:
-            self.bus.get(id).remove(self.bonus)
+    def merge(self, other):
+        # if the other registry hasn't been initialized, it's None
+        if not other: 
+            return self
+        for component in other.components():
+            self.set(component)
+        self._actions.update(other._actions)
+        return self
     
     def wire(self):
-        for id in self.modified_component_ids:
-            self.bus.get(id).update(self.bonus)
-        for id in self.affected_by_component_ids:
-            self.bus.get(id).affects(self)
+        remove_later = []
+        for action in self._actions:
+            try:
+                action.execute(self)
+                if action.done:
+                    remove_later.append(action)
+            except Exception as e:
+                # TODO: Add logging
+                #print e.__class__, e
+                pass
+        # remove finished actions
+        for action in remove_later:
+            self._actions.remove(action)
+
+
+class NullRegistry(Registry):
     
-    def affects(self, other):
-        self.modified_component_ids.add(other.get_provider_id())
-        other.update(self.bonus)
+    def set(self, component):
+        pass
+    
+    def get(self, component_id):
+        return None
+    
+
+class ModifyOtherAction(object):
+    
+    def __init__(self, component, id):
+        self.done = False
+        self.component = component
+        self.id = id
+    
+    def execute(self, registry):
+        self.component.affects(registry.get(self.id))
+        self.done = True
+        
+        
+class DependsOnAction(object):
+    
+    def __init__(self, component, id):
+        self.done = False
+        self.component = component
+        self.id = id
+    
+    def execute(self, registry):
+        registry.get(self.id).affects(self.component)
+        self.done = True
+
+
+class AbstractComponent(object):
+    
+    def __init__(self, id=None):
+        # TODO: Doesn't this make things much more complicated? 
+        # Maybe use Registry directly.
+        self._registry = NullRegistry()
+        self._id = id
+        self._components = []
+        
+    def add(self, component):
+        self._init_registry()
+        self._components.append(component)
+        self._registry.set(component)
+        return component
+    
+    def id(self):
+        return self._id
+    
+    def on_register(self, registry):
+        # It might be that the component has already actions set,
+        # which are only expressed as dependencies of its child
+        # components. In this case we need to copy those over to
+        # the new registry, otherwise they get erased.
+        if self.registry and self.registry._actions:
+            registry._actions.update(self.registry._actions)
+        self.registry = registry
+        return True
+    
+    @property
+    def registry(self):
+        return self._registry    
+    
+    @registry.setter
+    def registry(self, new_registry):
+        self._registry = new_registry
+        for component in self._components:
+            component.registry = new_registry
+    
+    def _init_registry(self):
+        if isinstance(self._registry, NullRegistry):
+            self._registry = Registry()
+    
+    def __repr__(self):
+        return "<Component '%s'>" % self.id()
         
 
 class Component(Modifiable, AbstractComponent):
     
     def __init__(self, initial=0):
-        Modifiable.__init__(self, initial=initial)
         AbstractComponent.__init__(self)
+        Modifiable.__init__(self, initial=initial)
+                
+        # TODO: Refactor these out into sth else
+        self.modified_component_ids = set()
+        self.affected_component_ids = set()
+        self.bonus = None
+        
+        
+    def affects(self, other):
+        self.modified_component_ids.add(other.id())
+        other.update(self.bonus)
+        
+        
+    def dependency_actions(self):
         self.declare_dependencies()
+        actions = []
+        for id in self.modified_component_ids:
+            actions.append(ModifyOtherAction(self, id))
+        for id in self.affected_component_ids:
+            actions.append(DependsOnAction(self, id))
+        return actions
         
     # template method to be used by child classes 
     def declare_dependencies(self):
         pass
 
 
-class Bus():
+class VirtualGroup(Component):
     
-    def __init__(self):
-        self._objects = {}
+    def on_register(self, registry):
+        self.registry = registry.merge(self.registry)
+        return False
         
-    def add(self, component):
-        component.bus = self
-        component.add()
-        self._objects[component.get_provider_id()] = component
-        return component
-    
-    def remove(self, component):
-        stored = self._objects.pop(component.get_provider_id(), AbstractComponent())
-        stored.destroy()
-    
-    def get(self, provider_id):
-        return self._objects[provider_id]
-    
-    def wire(self):
-        for obj in self._objects.values():
-            obj.wire()
-            
+    def __repr__(self):
+        return "<%s>" % self.__class__.__name__
             
 #--- concrete implementations of modifiers -----------------------------------------
     

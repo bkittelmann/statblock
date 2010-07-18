@@ -10,7 +10,6 @@ import py
 
 def test_strength_affected():
     guard = Character()
-    guard.wire()
     
     guard.abilities.strength = 16
     assert guard.abilities.strength.value == 16
@@ -23,8 +22,6 @@ def test_strength_affected():
     
 def test_dexterity_affected():
     guard = Character()
-    guard.wire()
-    
     guard.abilities.dexterity = 8
     assert guard.armor_class.value == 9
     assert guard.attack.ranged.value == -1
@@ -33,8 +30,6 @@ def test_dexterity_affected():
     
 def test_constitution_affected():
     guard = Character()
-    guard.wire()
-    
     guard.abilities.constitution = 13
     assert guard.hit_points.value == 9
     assert guard.saving_throws.fortitude.value == 1
@@ -45,16 +40,12 @@ def test_constitution_affected():
     
 def test_wisdom_affected():
     guard = Character()
-    guard.wire()
-    
     guard.abilities.wisdom = 14
     assert guard.saving_throws.will.value == +2
     
     
 def test_base_attack():
     guard = Character()
-    guard.wire()
-    
     guard.attack.base.value += 1
     guard.abilities.strength = 15
     guard.abilities.dexterity = 12
@@ -65,8 +56,6 @@ def test_base_attack():
 
 def test_size_effects():
     guard = Character()
-    guard.wire()
-    
     guard.size = Size.LARGE
     assert guard.attack.base.value == -1
     assert guard.armor_class.value == 9
@@ -80,14 +69,16 @@ def test_adding_a_weapon():
     guard = Character()
     guard.abilities.strength.value = 16
     guard.abilities.dexterity.value = 13
-    guard.wire()
+    guard.registry._actions.clear()
     
     sword = Longsword()
     dagger = Dagger()
-    guard.weapons.put(sword)
-    guard.weapons.put(dagger)
+    guard.weapons.add(sword)
+    guard.weapons.add(dagger)
     guard.add(WeaponFocus())
-    guard.wire()
+    
+#    for component in guard.registry.components():
+#        print component.id()
     
     assert sword.melee.attack.value == 4
     assert sword.melee.damage.default == d8
@@ -100,8 +91,6 @@ def test_adding_a_weapon():
     assert dagger.ranged.attack.value == 1
     assert dagger.ranged.damage.get_combined() == d4 
     
-    
-    
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", "test_character.py"])
+    py.cmdline.pytest(["-s", "test_character.py"])#, "-k", "sword"])

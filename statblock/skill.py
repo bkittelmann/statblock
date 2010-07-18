@@ -31,7 +31,7 @@ class Balance(Component):
     
     
     def declare_dependencies(self):
-        self.affected_by_component_ids.add("Dexterity")
+        self.affected_component_ids.add("Dexterity")
         
         
 class Jump(Component):
@@ -47,7 +47,7 @@ class Jump(Component):
     
     
     def declare_dependencies(self):
-        self.affected_by_component_ids.add("Strength")
+        self.affected_component_ids.add("Strength")
 
         
 class Tumble(Component):
@@ -57,14 +57,15 @@ class Tumble(Component):
         self.ranks = ranks
         self.bonus = SkillModifier(self)
         
-        
     def __repr__(self):
         return "Tumble: %s" % self.value
     
     def declare_dependencies(self):
-        self.affected_by_component_ids.add("Dexterity")
+        self.affected_component_ids.add("Dexterity")
+        self.modified_component_ids.add("Balance") # set synergy
+        self.modified_component_ids.add("Jump") # set synergy
     
-    def wire(self):
+    def extra_wire(self):
         super(Tumble, self).wire()
         self.bus.get("Balance").update(SynergyModifier(self))
         self.bus.get("Jump").update(SynergyModifier(self))

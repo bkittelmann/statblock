@@ -1,6 +1,6 @@
 from statblock.dice import Die
 from statblock.dice import d4, d8
-from statblock.base import AbstractComponent
+from statblock.base import VirtualGroup
 from statblock.base import Component
 
 
@@ -13,20 +13,20 @@ class Attack(Component):
 
 class MeleeAttack(Attack):
     
-    def get_provider_id(self):
-        return self.weapon.get_provider_id() + "/melee/attack"
+    def id(self):
+        return self.weapon.id() + "/melee/attack"
     
     def declare_dependencies(self):
-        self.affected_by_component_ids.add("BaseMeleeAttack")
+        self.affected_component_ids.add("BaseMeleeAttack")
         
 
 class RangedAttack(Attack):
     
-    def get_provider_id(self):
-        return self.weapon.get_provider_id() + "/ranged/attack"
+    def id(self):
+        return self.weapon.id() + "/ranged/attack"
     
     def declare_dependencies(self):
-        self.affected_by_component_ids.add("BaseRangedAttack")
+        self.affected_component_ids.add("BaseRangedAttack")
 
 
 class Damage(Component):
@@ -49,47 +49,33 @@ class Damage(Component):
 
 class MeleeDamage(Damage):
     
-    def get_provider_id(self):
-        return self.weapon.get_provider_id() + "/melee/damage"
+    def id(self):
+        return self.weapon.id() + "/melee/damage"
     
     def declare_dependencies(self):
-        self.affected_by_component_ids.add("Strength")
+        self.affected_component_ids.add("Strength")
     
     
 class RangedDamage(Damage):
     
-    def get_provider_id(self):
-        return self.weapon.get_provider_id() + "/ranged/damage"
+    def id(self):
+        return self.weapon.id() + "/ranged/damage"
     
 
-class CombatModifierGroup(AbstractComponent):
+class CombatModifierGroup(VirtualGroup):
     
     def __init__(self):
         super(CombatModifierGroup, self).__init__()
         self._attack = None
         self._damage = None
         
-    def add(self, bus):
-        if self._attack and self._damage:
-            bus.add(self._attack)
-            bus.add(self._damage)
-    
-    def wire(self):
-        if self._attack and self._damage:
-            self._attack.wire()
-            self._damage.wire()
-            
-    def register(self, other):
-        other.bus = self.bus
-        return other
-                    
     @property
     def attack(self):
         return self._attack
     
     @attack.setter
     def attack(self, new_value):
-        self._attack = self.register(new_value)
+        self._attack = self.add(new_value)
         
     @property
     def damage(self):
@@ -97,23 +83,15 @@ class CombatModifierGroup(AbstractComponent):
     
     @damage.setter
     def damage(self, new_value):
-        self._damage = self.register(new_value)
+        self._damage = self.add(new_value)
         
 
-class Weapon(Component):
+class Weapon(VirtualGroup):
     
     def __init__(self):
         super(Weapon, self).__init__()
-        self.melee = CombatModifierGroup()
-        self.ranged = CombatModifierGroup()
-        
-    def add(self):
-        self.melee.add(self.bus)
-        self.ranged.add(self.bus)
-        
-    def wire(self):
-        self.melee.wire()
-        self.ranged.wire()
+        self.melee = self.add(CombatModifierGroup())
+        self.ranged = self.add(CombatModifierGroup())
         
     def is_ranged(self):
         return self.ranged.attack and self.ranged.damage
@@ -129,7 +107,7 @@ class Longsword(Weapon):
         self.melee.attack = MeleeAttack(self)
         self.melee.damage = MeleeDamage(self, d8)
         
-    def get_provider_id(self):
+    def id(self):
         return "weapon/longsword"
     
     
@@ -143,6 +121,6 @@ class Dagger(Weapon):
         self.ranged.attack = RangedAttack(self)
         self.ranged.damage = RangedDamage(self, d4)
     
-    def get_provider_id(self):
+    def id(self):
         return "weapon/dagger"
     

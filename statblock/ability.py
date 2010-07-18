@@ -27,7 +27,7 @@ class Ability(Component):
 
 class Strength(Ability):
     
-    def get_provider_id(self):
+    def id(self):
         return "Strength"
     
     def declare_dependencies(self):
@@ -36,7 +36,7 @@ class Strength(Ability):
 
 class Dexterity(Ability):
     
-    def get_provider_id(self):
+    def id(self):
         return "Dexterity"
     
     def declare_dependencies(self):
@@ -50,7 +50,7 @@ class Dexterity(Ability):
 
 class Constitution(Ability):
     
-    def get_provider_id(self):
+    def id(self):
         return "Constitution"
     
     def declare_dependencies(self):
@@ -62,13 +62,13 @@ class Constitution(Ability):
 
 class Intelligence(Ability):
     
-    def get_provider_id(self):
+    def id(self):
         return "Intelligence"
 
   
 class Wisdom(Ability):
     
-    def get_provider_id(self):
+    def id(self):
         return "Wisdom"
     
     def declare_dependencies(self):
@@ -77,5 +77,5 @@ class Wisdom(Ability):
 
 class Charisma(Ability):
     
-    def get_provider_id(self):
+    def id(self):
         return "Charisma"

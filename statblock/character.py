@@ -1,4 +1,4 @@
-from statblock.base import AbstractComponent, Bus, Component, Modifier, Bonus
+from statblock.base import VirtualGroup, Component, Modifier, Bonus
 from statblock.ability import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
 
 class ValueModifier(Modifier):
@@ -32,7 +32,7 @@ class _Size(Component):
     def declare_dependencies(self):
         self.modified_component_ids = set(["BaseAttack", "ArmorClass"])
     
-    def get_provider_id(self):
+    def id(self):
         return "Size"
             
     def __repr__(self):
@@ -65,37 +65,29 @@ class Alignment(object):
 
 class Fortitude(Component):
     
-    def get_provider_id(self):
+    def id(self):
         return "Fortitude"
 
 
 class Reflex(Component):
     
-    def get_provider_id(self):
+    def id(self):
         return "Reflex"
     
 
 class Will(Component):
     
-    def get_provider_id(self):
+    def id(self):
         return "Will"
 
 
-class SavingThrowGroup(AbstractComponent):
+class SavingThrowGroup(VirtualGroup):
     
     def __init__(self):
-        self._fortitude = Fortitude(0)
-        self._reflex = Reflex(0)
-        self._will = Will(0)
-        self._group = [self._fortitude, self._reflex, self._will]
-    
-    def add(self):
-        for member in self._group:
-            self.bus.add(member)
-    
-    def wire(self):
-        for member in self._group:
-            member.wire()
+        super(SavingThrowGroup, self).__init__()
+        self._fortitude = self.add(Fortitude(0))
+        self._reflex = self.add(Reflex(0))
+        self._will = self.add(Will(0))
     
     @property
     def fortitude(self):
@@ -125,28 +117,17 @@ class SavingThrowGroup(AbstractComponent):
         return "<SavingThrows>"
 
 
-class AbilityGroup(AbstractComponent):
+class AbilityGroup(VirtualGroup):
     
     def __init__(self):
-        self._strength     = Strength(10)
-        self._dexterity    = Dexterity(10)
-        self._constitution = Constitution(10)
-        self._intelligence = Intelligence(10)
-        self._wisdom       = Wisdom(10)
-        self._charisma     = Charisma(10)
-        self._group = [
-            self._strength,  self._dexterity, self._constitution,
-            self._intelligence, self._wisdom, self._charisma
-        ]
-
+        super(AbilityGroup, self).__init__()
         
-    def add(self):
-        for member in self._group:
-            self.bus.add(member)
-    
-    def wire(self):
-        for member in self._group:
-            member.wire()
+        self._strength     = self.add(Strength(10))
+        self._dexterity    = self.add(Dexterity(10))
+        self._constitution = self.add(Constitution(10))
+        self._intelligence = self.add(Intelligence(10))
+        self._wisdom       = self.add(Wisdom(10))
+        self._charisma     = self.add(Charisma(10))
 
     @property
     def strength(self):
@@ -199,13 +180,13 @@ class AbilityGroup(AbstractComponent):
 
 class HitPoints(Component):
     
-    def get_provider_id(self):
+    def id(self):
         return "HitPoints"     
     
     
 class Initiative(Component):
     
-    def get_provider_id(self):
+    def id(self):
         return "Initiative"
     
     def __repr__(self):
@@ -218,7 +199,7 @@ class BaseAttack(Component):
         super(BaseAttack, self).__init__(*args, **kwargs)
         self.bonus = ValueModifier(self)
     
-    def get_provider_id(self):
+    def id(self):
         return "BaseAttack"
     
     def declare_dependencies(self):
@@ -240,7 +221,7 @@ class BaseMeleeAttack(Component):
         super(BaseMeleeAttack, self).__init__(*args, **kwargs)
         self.bonus = ValueModifier(self)
     
-    def get_provider_id(self):
+    def id(self):
         return "BaseMeleeAttack"   
     
 
@@ -250,36 +231,21 @@ class BaseRangedAttack(Component):
         super(BaseRangedAttack, self).__init__(*args, **kwargs)
         self.bonus = ValueModifier(self)
     
-    def get_provider_id(self):
+    def id(self):
         return "BaseRangedAttack"
     
     
 class ArmorClass(Component):
     
-    def get_provider_id(self):
+    def id(self):
         return "ArmorClass"
 
 
-class WeaponsGroup(AbstractComponent):
+class WeaponsGroup(VirtualGroup):
+    pass
     
-    def __init__(self):
-        self._weapons = []
-    
-    def add(self):
-        for member in self._weapons:
-            self.bus.add(member)
-    
-    def wire(self):
-        for member in self._weapons:
-            member.wire()
-            
-    def put(self, weapon):
-        self._weapons.append(weapon)
-        self.add()
-        self.wire()
-        
 
-class Character(Bus, AbstractComponent):
+class Character(VirtualGroup):
     
     def __init__(self):
         super(Character, self).__init__()
@@ -300,7 +266,6 @@ class Character(Bus, AbstractComponent):
         self.attack.ranged = self.add(BaseRangedAttack(0))
         
         self.weapons = self.add(WeaponsGroup())
-#        self.ranged = [Longbow()]
         
         
     @property
@@ -310,9 +275,12 @@ class Character(Bus, AbstractComponent):
         
     @size.setter
     def size(self, new_size):
-        self.remove(self._size)
+        # we need to remove the size modifier from everywhere, it would
+        # get inserted twice in the component's modifier map. clearly only
+        # one size modifier can exist at a time
+        for m in self._size.modified_component_ids:
+            self.registry.get(m).remove(self._size.bonus)
         self._size = self.add(new_size)
-        self.wire()
         
         
     def __repr__(self):

@@ -1,3 +1,5 @@
+from statblock.base import AbstractComponent
+from statblock.ability import Dexterity
 import py
 
 from statblock.ability import Strength
@@ -9,7 +11,7 @@ from statblock.skill import Jump
 from statblock.feat import FeatModifier
 from statblock.feat import ImprovedInitiative
 
-from statblock.base import Bus
+from statblock.base import Registry
 from statblock.base import Bonus
 from statblock.base import EnhancementModifier
 from statblock.base import ModifierSet
@@ -60,18 +62,17 @@ def test_bonusset_calculate_stackable():
     assert bset.calculate(2) == 6
     
 
-def xtest_getting_at_game_feature_and_wire_it():
+def test_wiring_skills():
     t = Tumble(6)
     b = Balance(0)
     
-    bus = Bus()
+    bus = AbstractComponent()
     bus.add(b)
     bus.add(Initiative(0))
     bus.add(Strength(8))
     bus.add(Dexterity(14))
     bus.add(Jump(0))
     bus.add(t)
-    bus.wire()
     
     assert t.value == 8
     assert b.value == 4
@@ -83,5 +84,5 @@ def test_strength_repr():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-k", "test_base", "-s"])
+    py.cmdline.pytest(["-s", "test_base.py"])
 
