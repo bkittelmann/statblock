@@ -97,4 +97,4 @@ def test_adding_a_weapon():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", os.path.basename(__file__)])#, "-k", "sword"])
+    py.cmdline.pytest(["-s", os.path.basename(__file__)])
