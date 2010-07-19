@@ -4,9 +4,16 @@ from statblock.weapon import Longsword
 from statblock.dice import d4, d8
 from statblock.feat import WeaponFocus
 from statblock.weapon import Dagger
+from statblock.ability import Strength
 
 import py
+import os.path
 
+
+def test_strength_repr():
+    s = Strength(12)
+    assert str(s) == "Strength: 12"
+    
 
 def test_strength_affected():
     guard = Character()
@@ -90,4 +97,4 @@ def test_adding_a_weapon():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", "test_character.py"])#, "-k", "sword"])
+    py.cmdline.pytest(["-s", os.path.basename(__file__)])#, "-k", "sword"])

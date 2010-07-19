@@ -1,20 +1,10 @@
-import py
-
-from statblock.ability import Dexterity
-from statblock.ability import Strength
-
-from statblock.base import AbstractComponent
 from statblock.base import Bonus
 from statblock.base import EnhancementModifier
 from statblock.base import ModifierSet
-
-from statblock.character import Initiative
-
 from statblock.feat import FeatModifier
 
-from statblock.skill import Balance
-from statblock.skill import Jump
-from statblock.skill import Tumble
+import os.path
+import py
 
 
 def test_bonus_stacks():
@@ -60,27 +50,6 @@ def test_bonusset_calculate_stackable():
     assert bset.calculate(2) == 6
     
 
-def test_wiring_skills():
-    tumble = Tumble(6)
-    balance = Balance(0)
-    
-    character = AbstractComponent()
-    character.add(balance)
-    character.add(Initiative(0))
-    character.add(Strength(8))
-    character.add(Dexterity(14))
-    character.add(Jump(0))
-    character.add(tumble)
-    
-    assert tumble.value == 8
-    assert balance.value == 4
-    
-    
-def test_strength_repr():
-    s = Strength(12)
-    assert str(s) == "Strength: 12"
-    
-
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", "test_base.py"])
+    py.cmdline.pytest(["-s", os.path.basename(__file__)])
 
