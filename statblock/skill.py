@@ -2,10 +2,16 @@ from statblock.base import Bonus
 from statblock.base import Component
 from statblock.base import Modifier
 
+import math
+
 class SkillModifier(Modifier):
     
     def __init__(self, skill):
         Modifier.__init__(self, Bonus.UNTYPED, skill.ranks, skill)
+        
+    @property
+    def value(self):
+        return math.floor(self.source.value)
         
 
 class AddSynergyAction(object):
@@ -31,56 +37,51 @@ class SynergyModifier(Modifier):
     def value(self):
         return +2 if self.source.ranks >= 5 else 0
         
-
-class Balance(Component):
-    
-    def __init__(self, ranks):
-        super(Balance, self).__init__()
-        self.ranks = ranks
-        self.value = self.ranks
-        self.bonus = SkillModifier(self)
         
-    def id(self):
-        return "Balance"
+class Skill(Component):
+    
+    def __init__(self, ranks=0):
+        super(Skill, self).__init__(initial=ranks)
+        self.bonus = SkillModifier(self)
+    
+    @property
+    def value(self):
+        return super(Skill, self).value
+        
+    @value.setter
+    def value(self, other):
+        if (other % 0.5) != 0:
+            raise Exception("Only fractions of 0.5 can be set as ranks")
+        self.initial = other
         
     def __repr__(self):
-        return "Balance: %s" % self.value
+        return "<%s: %s>" % (self.__class__.__name__, self.value)
+        
+    ranks = value
+    
+
+class Balance(Skill):
+    
+    def id(self):
+        return "Balance"
     
     def declare_dependencies(self):
         self.affected_component_ids.add("Dexterity")
         
         
-class Jump(Component):
+class Jump(Skill):
     
-    def __init__(self, ranks):
-        super(Jump, self).__init__()
-        self.ranks = ranks
-        self.value = self.ranks
-        self.bonus = SkillModifier(self)
-        
     def id(self):
         return "Jump"
         
-    def __repr__(self):
-        return "Jump: %s" % self.value
-    
     def declare_dependencies(self):
         self.affected_component_ids.add("Strength")
 
         
-class Tumble(Component):
-    
-    def __init__(self, ranks):
-        super(Tumble, self).__init__()
-        self.ranks = ranks
-        self.bonus = SkillModifier(self)
-        self.value = self.ranks
+class Tumble(Skill):
     
     def id(self):
         return "Tumble"
-    
-    def __repr__(self):
-        return "Tumble: %s" % self.value
     
     def declare_dependencies(self):
         self.affected_component_ids.add("Dexterity")
