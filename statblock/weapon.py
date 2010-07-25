@@ -1,5 +1,5 @@
 from statblock.dice import Die
-from statblock.dice import d4, d8
+from statblock.dice import d4, d6, d8
 from statblock.base import VirtualGroup
 from statblock.base import Component
 
@@ -171,4 +171,15 @@ class Dagger(CombinedWeapon):
     
     def id(self):
         return "weapon/dagger"
+    
+
+class Javelin(RangedWeapon):
+    
+    def __init__(self):
+        super(Javelin, self).__init__()
+        self.damage = d6
+        
+    def id(self):
+        return "weapon/javelin"
+    
     
