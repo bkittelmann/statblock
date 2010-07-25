@@ -93,5 +93,13 @@ def test_adding_a_weapon():
     assert dagger.ranged.damage.value == d4 
     
 
+def test_flatfooted_armor_class():
+    guard = Character()
+    guard.abilities.dexterity.value = 12
+    
+    assert guard.armor_class.value == 11
+    assert guard.flat_footed == 10
+    
+
 if __name__ == '__main__':
     py.cmdline.pytest(["-s", os.path.basename(__file__)])

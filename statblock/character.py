@@ -250,6 +250,10 @@ class Character(VirtualGroup):
     def __init__(self):
         super(Character, self).__init__()
         
+        self.race = "Human"
+        self.sex = "Male"
+        self.level = "Warrior 1"
+        
         self.hit_points = self.add(HitPoints(initial=8))
         self.initiative = self.add(Initiative(0))
         self.alignment = Alignment.N
@@ -266,6 +270,19 @@ class Character(VirtualGroup):
         self.attack.ranged = self.add(BaseRangedAttack(0))
         
         self.weapons = self.add(WeaponsGroup())
+        
+        
+    @property
+    def flat_footed(self):
+        modifiers = self.armor_class.modifiers.values()
+
+        def is_not_dex(m):
+            return m.source is not self.abilities.dexterity
+        
+        def without_dex(a, b):
+            return a + b.calculate(0, ignore_func=is_not_dex)
+        
+        return reduce(without_dex, modifiers, 10)
         
         
     @property
