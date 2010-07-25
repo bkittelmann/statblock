@@ -103,6 +103,9 @@ class Registry(object):
     def __init__(self):
         self._components = {}
         self._actions = set()
+        
+    def add_action(self, action):
+        self._actions.add(action)
 
     @property
     def actions(self):

@@ -85,5 +85,5 @@ class Tumble(Skill):
     
     def declare_dependencies(self):
         self.affected_component_ids.add("Dexterity")
-        self.registry.actions.add(AddSynergyAction(self, "Balance"))
-        self.registry.actions.add(AddSynergyAction(self, "Jump"))
+        self.registry.add_action(AddSynergyAction(self, "Balance"))
+        self.registry.add_action(AddSynergyAction(self, "Jump"))
