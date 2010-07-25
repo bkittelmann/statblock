@@ -42,7 +42,7 @@ class Dexterity(Ability):
     def declare_dependencies(self):
         self.modified_component_ids = set([
             "Initiative",
-            "ArmorClass",
+            "armor-class",
             "BaseRangedAttack",
             "Reflex"
         ])

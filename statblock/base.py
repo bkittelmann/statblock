@@ -11,10 +11,14 @@ class _Bonus(object):
         return self.stackable
     
 
+# TODO
 class Bonus(object):
-    UNTYPED     = _Bonus("untyped",     True)
-    ENHANCEMENT = _Bonus("enhancement", False)
-    SIZE        = _Bonus("size",        False)
+    UNTYPED         = _Bonus("untyped",       True)
+    ENHANCEMENT     = _Bonus("enhancement",   False)
+    SIZE            = _Bonus("size",          False)
+    ARMOR           = _Bonus("armor",         False)
+    SHIELD          = _Bonus("shield",        False)
+    NATURAL_ARMOR   = _Bonus("natural-armor", False)
     
 
 class ModifierSet(set):
@@ -45,7 +49,8 @@ class ModifierSet(set):
         
     def _get_highest(self, initial, ignore_func):
         filter_result = filter(ignore_func, self)
-        return initial + sorted(filter_result, key=lambda m: m.value, reverse=True)[0].value
+        highest = sorted(filter_result, key=lambda m: m.value, reverse=True)
+        return initial + (highest[0].value if len(highest) > 0 else 0)
     
     
 class Modifier(object):

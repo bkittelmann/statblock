@@ -1,5 +1,6 @@
 from statblock.base import VirtualGroup, Component, Modifier, Bonus
 from statblock.ability import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
+from statblock.armor import NaturalArmor
 
 class ValueModifier(Modifier):
     
@@ -30,7 +31,7 @@ class _Size(Component):
         self.bonus = SizeModifier(self)
         
     def declare_dependencies(self):
-        self.modified_component_ids = set(["BaseAttack", "ArmorClass"])
+        self.modified_component_ids = set(["BaseAttack", "armor-class"])
     
     def id(self):
         return "Size"
@@ -238,7 +239,7 @@ class BaseRangedAttack(Component):
 class ArmorClass(Component):
     
     def id(self):
-        return "ArmorClass"
+        return "armor-class"
 
 
 class WeaponsGroup(VirtualGroup):
@@ -270,6 +271,9 @@ class Character(VirtualGroup):
         self.attack.ranged = self.add(BaseRangedAttack(0))
         
         self.weapons = self.add(WeaponsGroup())
+        self._armor = None
+        self._shield = None
+        self.natural_armor = self.add(NaturalArmor())
         
         
     @property
@@ -283,6 +287,19 @@ class Character(VirtualGroup):
             return a + b.calculate(0, ignore_func=is_not_dex)
         
         return reduce(without_dex, modifiers, 10)
+    
+    
+    @property
+    def touch(self):
+        modifiers = self.armor_class.modifiers.values()
+
+        def no_armor(m):
+            return m.type not in (Bonus.ARMOR, Bonus.SHIELD, Bonus.NATURAL_ARMOR)
+        
+        def without_armor(a, b):
+            return a + b.calculate(0, ignore_func=no_armor)
+        
+        return reduce(without_armor, modifiers, 10)
         
         
     @property
@@ -299,6 +316,21 @@ class Character(VirtualGroup):
             self.registry.get(m).remove(self._size.bonus)
         self._size = self.add(new_size)
         
+    @property
+    def armor(self):
+        return self._armor
+    
+    @armor.setter
+    def armor(self, new_armor):
+        self._armor = self.add(new_armor)
+    
+    @property
+    def shield(self):
+        return self._shield
+    
+    @shield.setter
+    def shield(self, new_shield):
+        self._shield = self.add(new_shield)
         
     def __repr__(self):
         return "<Character>"
