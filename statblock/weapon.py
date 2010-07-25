@@ -36,15 +36,18 @@ class Damage(Component):
         self.weapon = weapon
         self.default = default
     
-    def get_combined(self):
+    @property
+    def value(self):
+        "The value of a damage is the combined dice roll with modifiers."
         return Die(
             self.default.number, 
             multiplicator=self.default.multiplicator, 
-            modifier=self.default.modifier + self.value
+            modifier=self.default.modifier + self._calculate_modifiers()
         )
     
-    def roll(self):
-        return self.get_combined().roll()
+    def _calculate_modifiers(self):
+        "Since value() is overridden, we need this method to sum up the modifiers."
+        return reduce(lambda a, b: a + b.calculate(0), self.modifiers.values(), self.initial)
     
 
 class MeleeDamage(Damage):
@@ -85,41 +88,86 @@ class CombatModifierGroup(VirtualGroup):
     def damage(self, new_value):
         self._damage = self.add(new_value)
         
-
+        
 class Weapon(VirtualGroup):
     
     def __init__(self):
         super(Weapon, self).__init__()
-        self.melee = self.add(CombatModifierGroup())
-        self.ranged = self.add(CombatModifierGroup())
+        self._melee = self.add(CombatModifierGroup())
+        self._ranged = self.add(CombatModifierGroup())
+      
+    @property
+    def melee(self):
+        return self._melee
+        
+    @property
+    def ranged(self):
+        return self._ranged
         
     def is_ranged(self):
-        return self.ranged.attack and self.ranged.damage
+        return False
     
     def is_melee(self):
-        return self.melee.attack and self.melee.damage
+        return False
     
+    
+class MeleeWeapon(Weapon):
+    
+    def __init__(self):
+        super(MeleeWeapon, self).__init__()
+    
+    def damage(self, default_damage):
+        self._melee.attack = MeleeAttack(self)
+        self._melee.damage = MeleeDamage(self, default_damage)        
 
-class Longsword(Weapon):
+    def is_melee(self):
+        return True
+    
+    damage = property(fset=damage)
+    
+    
+class RangedWeapon(Weapon):
+    
+    def __init__(self):
+        super(RangedWeapon, self).__init__()
+        
+    def damage(self, default_damage):
+        self._ranged.attack = RangedAttack(self)
+        self._ranged.damage = RangedDamage(self, default_damage)        
+
+    def is_ranged(self):
+        return True
+    
+    damage = property(fset=damage)
+    
+    
+class CombinedWeapon(MeleeWeapon, RangedWeapon):
+    
+    def __init__(self):
+        super(CombinedWeapon, self).__init__()
+    
+    def damage(self, default_damage):
+        MeleeWeapon.damage.fset(self, default_damage)
+        RangedWeapon.damage.fset(self, default_damage)
+        
+    damage = property(fset=damage)
+
+    
+class Longsword(MeleeWeapon):
     
     def __init__(self):
         super(Longsword, self).__init__()
-        self.melee.attack = MeleeAttack(self)
-        self.melee.damage = MeleeDamage(self, d8)
+        self.damage = d8
         
     def id(self):
         return "weapon/longsword"
     
     
-class Dagger(Weapon):
+class Dagger(CombinedWeapon):
     
     def __init__(self):
         super(Dagger, self).__init__()
-        self.melee.attack = MeleeAttack(self)
-        self.melee.damage = MeleeDamage(self, d4)
-        
-        self.ranged.attack = RangedAttack(self)
-        self.ranged.damage = RangedDamage(self, d4)
+        self.damage = d4
     
     def id(self):
         return "weapon/dagger"

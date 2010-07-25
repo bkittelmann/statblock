@@ -86,14 +86,11 @@ def test_adding_a_weapon():
     
     assert sword.melee.attack.value == 4
     assert sword.melee.damage.default == d8
-    assert sword.melee.damage.get_combined() == d8+3
-    assert sword.is_melee()
-    assert not sword.is_ranged()
+    assert sword.melee.damage.value == d8+3
     
     assert dagger.melee.attack.value == 3
-    assert dagger.is_ranged()
     assert dagger.ranged.attack.value == 1
-    assert dagger.ranged.damage.get_combined() == d4 
+    assert dagger.ranged.damage.value == d4 
     
 
 if __name__ == '__main__':
