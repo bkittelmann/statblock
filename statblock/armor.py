@@ -76,3 +76,12 @@ class LightSteelShield(Shield):
         return "shield/light-steel-shield"
     
     
+class HeavySteelShield(Shield):
+    
+    def __init__(self):
+        super(HeavySteelShield, self).__init__(initial=2)
+        
+    def id(self):
+        return "shield/heavy-steel-shield"
+    
+    

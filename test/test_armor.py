@@ -1,6 +1,7 @@
 from statblock.character import Character
 from statblock.armor import ChainMail
 from statblock.armor import LightSteelShield
+from statblock.armor import HeavySteelShield
 
 import py
 import os.path
@@ -45,6 +46,23 @@ def test_only_armor_low_touch_armor_class():
     guard.abilities.dexterity.value = 14
     assert guard.armor_class.value == 17
     assert guard.touch.value == 12
+    
+
+def test_that_old_armor_bonus_gets_removed():
+    guard = Character()
+    guard.shield = HeavySteelShield()
+    assert guard.armor_class.value == 12
+    
+    light = LightSteelShield()
+    guard.shield = light
+    
+    assert guard.armor_class.value == 11
+    
+    # the proxy should point to the light shield
+    assert light.value == guard.shield.value
+    
+    # and also only one shield component should remain 
+    assert len(guard.shield._components) == 1
     
 
 if __name__ == '__main__':

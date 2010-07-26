@@ -1,7 +1,7 @@
 from statblock.base import VirtualGroup, Component, Modifier, Bonus
+from statblock.base import ComponentProxy
 from statblock.ability import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
 from statblock.armor import NaturalArmor
-from statblock.base import Modifiable
 
 class ValueModifier(Modifier):
     
@@ -290,7 +290,7 @@ class Touch(Component):
 
 class WeaponsGroup(VirtualGroup):
     pass
-    
+
 
 class Character(VirtualGroup):
     
@@ -317,8 +317,8 @@ class Character(VirtualGroup):
         self.attack.ranged = self.add(BaseRangedAttack(0))
         self.weapons = self.add(WeaponsGroup())
     
-        self._armor = None
-        self._shield = None
+        self._armor = self.add(ComponentProxy("armor"))
+        self._shield = self.add(ComponentProxy("shield"))
         self.natural_armor = self.add(NaturalArmor())
         self.flat_footed = self.add(FlatFooted())
         self.touch = self.add(Touch())
@@ -331,11 +331,6 @@ class Character(VirtualGroup):
         
     @size.setter
     def size(self, new_size):
-        # we need to remove the size modifier from everywhere, it would
-        # get inserted twice in the component's modifier map. clearly only
-        # one size modifier can exist at a time
-        for m in self._size.modified_component_ids:
-            self.registry.get(m).remove(self._size.bonus)
         self._size = self.add(new_size)
         
     @property
@@ -344,7 +339,7 @@ class Character(VirtualGroup):
     
     @armor.setter
     def armor(self, new_armor):
-        self._armor = self.add(new_armor)
+        self._armor.add(new_armor)
     
     @property
     def shield(self):
@@ -352,7 +347,7 @@ class Character(VirtualGroup):
     
     @shield.setter
     def shield(self, new_shield):
-        self._shield = self.add(new_shield)
+        self._shield.add(new_shield)
         
     def __repr__(self):
         return "<Character>"

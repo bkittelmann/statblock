@@ -130,6 +130,9 @@ class Registry(object):
     def get(self, component_id):
         return self._components[component_id]
     
+    def has(self, component_id):
+        return component_id in self._components
+    
     def merge(self, other):
         for component in other.components:
             self.set(component)
@@ -184,6 +187,9 @@ class AbstractComponent(object):
         self._components = []
         
     def add(self, component):
+        if self._registry.has(component.id()):
+            self._registry.get(component.id()).destroy()
+            
         self._components.append(component)
         self._registry.set(component)
         return component
@@ -243,6 +249,11 @@ class Component(Modifiable, AbstractComponent):
     # template method to be used by child classes 
     def declare_dependencies(self):
         pass
+    
+    
+    def destroy(self):
+        for m in self.modified_component_ids:
+            self.registry.get(m).remove(self.bonus)
 
 
 class VirtualGroup(Component):
@@ -253,6 +264,43 @@ class VirtualGroup(Component):
         
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
+            
+
+class ComponentProxy(Component):
+    
+    def __init__(self, id):
+        super(ComponentProxy, self).__init__()
+        self._id = id
+        self._target = Component()
+        self._components.append(self._target)
+        
+    # make it possible to one and only child component
+    def add(self, component):
+        self.destroy()
+        self._target = Component.add(self, component)
+        return self
+     
+    def affects(self, other):
+        self._target.affects(self, other)
+
+    def destroy(self):
+        self._components.remove(self._target)
+        self._target.destroy()
+
+    def remove(self, modifier):
+        self._target.remove(modifier)
+        
+    def update(self, modifier):
+        self._target.update(modifier)
+        
+    @property
+    def value(self):
+        return self._target.value
+    
+    @value.setter
+    def value(self, new_value):
+        self._target.value = new_value
+        
             
 #--- concrete implementations of modifiers -----------------------------------------
     
