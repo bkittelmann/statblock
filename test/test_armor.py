@@ -32,7 +32,7 @@ def test_flatfooted_armor_class():
     guard.abilities.dexterity.value = 12
     
     assert guard.armor_class.value == 11
-    assert guard.flat_footed == 10
+    assert guard.flat_footed.value == 10
 
 
 def test_only_armor_low_touch_armor_class():
@@ -40,11 +40,11 @@ def test_only_armor_low_touch_armor_class():
     guard.armor = ChainMail()
     
     assert guard.armor_class.value == 15
-    assert guard.touch == 10
+    assert guard.touch.value == 10
     
     guard.abilities.dexterity.value = 14
     assert guard.armor_class.value == 17
-    assert guard.touch == 12
+    assert guard.touch.value == 12
     
 
 if __name__ == '__main__':

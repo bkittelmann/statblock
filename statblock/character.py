@@ -1,6 +1,7 @@
 from statblock.base import VirtualGroup, Component, Modifier, Bonus
 from statblock.ability import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
 from statblock.armor import NaturalArmor
+from statblock.base import Modifiable
 
 class ValueModifier(Modifier):
     
@@ -240,6 +241,51 @@ class ArmorClass(Component):
     
     def id(self):
         return "armor-class"
+    
+    
+class FlatFooted(Component):
+    
+    def id(self):
+        return "flat-footed"
+    
+    @property
+    def value(self):
+        self.initial = self._filter_modifiers()
+        return Component.value.fget(self)
+        
+    def _filter_modifiers(self):
+        ac = self.registry.get("armor-class")
+        dex = self.registry.get("Dexterity")
+
+        def is_not_dex(m):
+            return m.source is not dex
+        
+        def without_dex(a, b):
+            return a + b.calculate(0, ignore_func=is_not_dex)
+        
+        return reduce(without_dex, ac.modifiers.values(), 10)
+    
+    
+class Touch(Component):
+    
+    def id(self):
+        return "touch"
+    
+    @property
+    def value(self):
+        self.initial = self._filter_modifiers()
+        return Component.value.fget(self)
+        
+    def _filter_modifiers(self):
+        ac = self.registry.get("armor-class")
+        
+        def no_armor(m):
+            return m.type not in (Bonus.ARMOR, Bonus.SHIELD, Bonus.NATURAL_ARMOR)
+        
+        def without_armor(a, b):
+            return a + b.calculate(0, ignore_func=no_armor)
+        
+        return reduce(without_armor, ac.modifiers.values(), 10)
 
 
 class WeaponsGroup(VirtualGroup):
@@ -269,39 +315,15 @@ class Character(VirtualGroup):
         self.attack.base = self.add(BaseAttack(0))
         self.attack.melee = self.add(BaseMeleeAttack(0))
         self.attack.ranged = self.add(BaseRangedAttack(0))
-        
         self.weapons = self.add(WeaponsGroup())
+    
         self._armor = None
         self._shield = None
         self.natural_armor = self.add(NaturalArmor())
+        self.flat_footed = self.add(FlatFooted())
+        self.touch = self.add(Touch())
         
-        
-    @property
-    def flat_footed(self):
-        modifiers = self.armor_class.modifiers.values()
 
-        def is_not_dex(m):
-            return m.source is not self.abilities.dexterity
-        
-        def without_dex(a, b):
-            return a + b.calculate(0, ignore_func=is_not_dex)
-        
-        return reduce(without_dex, modifiers, 10)
-    
-    
-    @property
-    def touch(self):
-        modifiers = self.armor_class.modifiers.values()
-
-        def no_armor(m):
-            return m.type not in (Bonus.ARMOR, Bonus.SHIELD, Bonus.NATURAL_ARMOR)
-        
-        def without_armor(a, b):
-            return a + b.calculate(0, ignore_func=no_armor)
-        
-        return reduce(without_armor, modifiers, 10)
-        
-        
     @property
     def size(self):
         return self._size
