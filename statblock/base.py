@@ -157,13 +157,14 @@ class Registry(object):
 
 class ModifyOtherAction(object):
     
-    def __init__(self, component, id):
+    def __init__(self, component, id, bonus=None):
         self.done = False
         self.component = component
         self.id = id
+        self.bonus = bonus
     
     def execute(self, registry):
-        self.component.affects(registry.get(self.id))
+        self.component.affects(registry.get(self.id), bonus=self.bonus)
         self.done = True
         
         
@@ -232,9 +233,9 @@ class Component(Modifiable, AbstractComponent):
         self.bonus = None
         
         
-    def affects(self, other):
+    def affects(self, other, bonus=None):
         self.modified_component_ids.add(other.id())
-        other.update(self.bonus)
+        other.update(bonus or self.bonus)
         
         
     def dependency_actions(self):

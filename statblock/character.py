@@ -2,6 +2,7 @@ from statblock.base import VirtualGroup, Component, Modifier, Bonus
 from statblock.base import ComponentProxy
 from statblock.ability import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
 from statblock.armor import NaturalArmor
+from statblock.base import ModifyOtherAction
 
 class ValueModifier(Modifier):
     
@@ -13,44 +14,58 @@ class ValueModifier(Modifier):
         return self.source.value  
 
 
-class SizeModifier(Modifier):
+class SizeAttackModifier(Modifier):
     
     def __init__(self, source):
         Modifier.__init__(self, Bonus.SIZE, source.value, source)
         
     @property
     def value(self):
-        return self.source.value
+        return self.source.attack
     
-    
+
+class SizeGrappleModifier(Modifier):
+
+    def __init__(self, source):
+        Modifier.__init__(self, Bonus.SIZE, source.value, source)
+        
+    @property
+    def value(self):
+        # for grappling a size attack bonus does not count, we invert it
+        inverted_malus = (self.source.attack * -1)
+        return inverted_malus + self.source.grapple
+
+
 class _Size(Component):
     
-    def __init__(self, name, value):
+    def __init__(self, name, attack, grapple):
         super(_Size, self).__init__()
         self.name = name
-        self.value = value
-        self.bonus = SizeModifier(self)
+        self.attack = attack
+        self.grapple = grapple
+        self.bonus = SizeAttackModifier(self)
         
     def declare_dependencies(self):
         self.modified_component_ids = set(["BaseAttack", "armor-class"])
+        self.registry.add_action(ModifyOtherAction(self, "attack/grapple", bonus=SizeGrappleModifier(self)))
     
     def id(self):
-        return "Size"
+        return "size"
             
     def __repr__(self):
         return "<Size.%s>" % self.name
     
 
 class Size(object):
-    FINE       = _Size("Fine", +8)
-    DIMINUTIVE = _Size("Diminutive", +4)
-    TINY       = _Size("Fine", +2)
-    SMALL      = _Size("Small", +1)
-    MEDIUM     = _Size("Medium", 0)
-    LARGE      = _Size("Large", -1)
-    HUGE       = _Size("Huge", -2)
-    GARGANTUAN = _Size("Gargantuan", -4)
-    COLLOSAL   = _Size("Collossal", -8)
+    FINE       = _Size("Fine", +8, -16)
+    DIMINUTIVE = _Size("Diminutive", +4, -12)
+    TINY       = _Size("Fine", +2, -8)
+    SMALL      = _Size("Small", +1, -4)
+    MEDIUM     = _Size("Medium", 0, 0)
+    LARGE      = _Size("Large", -1, +4)
+    HUGE       = _Size("Huge", -2, + 8)
+    GARGANTUAN = _Size("Gargantuan", -4, +12)
+    COLLOSAL   = _Size("Collossal", -8, +16)
     
 
 class Alignment(object):
@@ -215,6 +230,7 @@ class AttackModifierGroup(object):
         self.base = None
         self.melee = None
         self.ranged = None
+        self.grapple = None
     
 
 class BaseMeleeAttack(Component):
@@ -236,6 +252,20 @@ class BaseRangedAttack(Component):
     def id(self):
         return "BaseRangedAttack"
     
+
+class GrappleAttack(Component):
+    
+    def __init__(self, *args, **kwargs):
+        super(GrappleAttack, self).__init__(*args, **kwargs)
+        self.bonus = ValueModifier(self)
+    
+    def id(self):
+        return "attack/grapple"
+    
+    def declare_dependencies(self):
+        self.affected_component_ids.add("BaseAttack")
+        self.affected_component_ids.add("Strength")
+
     
 class ArmorClass(Component):
     
@@ -315,6 +345,7 @@ class Character(VirtualGroup):
         self.attack.base = self.add(BaseAttack(0))
         self.attack.melee = self.add(BaseMeleeAttack(0))
         self.attack.ranged = self.add(BaseRangedAttack(0))
+        self.attack.grapple = self.add(GrappleAttack(0))
         self.weapons = self.add(WeaponsGroup())
     
         self._armor = self.add(ComponentProxy("armor"))

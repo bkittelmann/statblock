@@ -61,6 +61,14 @@ def test_base_attack():
     assert guard.attack.ranged.value == 2
     
 
+def test_grapple_attack():
+    guard = Character()
+    guard.attack.base.value += 3
+    guard.abilities.strength = 16
+    guard.size = Size.LARGE
+    assert guard.attack.grapple.value == 10
+    
+
 def test_size_effects():
     guard = Character()
     guard.size = Size.LARGE
