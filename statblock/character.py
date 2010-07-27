@@ -46,7 +46,7 @@ class _Size(Component):
         self.bonus = SizeAttackModifier(self)
         
     def declare_dependencies(self):
-        self.modified_component_ids = set(["BaseAttack", "armor-class"])
+        self.modified_component_ids = set(["attack/base", "armor-class"])
         self.registry.add_action(ModifyOtherAction(self, "attack/grapple", bonus=SizeGrappleModifier(self)))
     
     def id(self):
@@ -83,19 +83,19 @@ class Alignment(object):
 class Fortitude(Component):
     
     def id(self):
-        return "Fortitude"
+        return "fortitude"
 
 
 class Reflex(Component):
     
     def id(self):
-        return "Reflex"
+        return "reflex"
     
 
 class Will(Component):
     
     def id(self):
-        return "Will"
+        return "will"
 
 
 class SavingThrowGroup(VirtualGroup):
@@ -198,13 +198,13 @@ class AbilityGroup(VirtualGroup):
 class HitPoints(Component):
     
     def id(self):
-        return "HitPoints"     
+        return "hit-points"     
     
     
 class Initiative(Component):
     
     def id(self):
-        return "Initiative"
+        return "initiative"
     
     def __repr__(self):
         return "Initiative: %s" % self.value
@@ -217,11 +217,11 @@ class BaseAttack(Component):
         self.bonus = ValueModifier(self)
     
     def id(self):
-        return "BaseAttack"
+        return "attack/base"
     
     def declare_dependencies(self):
-        self.modified_component_ids.add("BaseMeleeAttack")
-        self.modified_component_ids.add("BaseRangedAttack")
+        self.modified_component_ids.add("attack/melee")
+        self.modified_component_ids.add("attack/ranged")
 
     
 class AttackModifierGroup(object):
@@ -240,7 +240,7 @@ class BaseMeleeAttack(Component):
         self.bonus = ValueModifier(self)
     
     def id(self):
-        return "BaseMeleeAttack"   
+        return "attack/melee"   
     
 
 class BaseRangedAttack(Component):
@@ -250,7 +250,7 @@ class BaseRangedAttack(Component):
         self.bonus = ValueModifier(self)
     
     def id(self):
-        return "BaseRangedAttack"
+        return "attack/ranged"
     
 
 class GrappleAttack(Component):
@@ -263,8 +263,8 @@ class GrappleAttack(Component):
         return "attack/grapple"
     
     def declare_dependencies(self):
-        self.affected_component_ids.add("BaseAttack")
-        self.affected_component_ids.add("Strength")
+        self.affected_component_ids.add("attack/base")
+        self.affected_component_ids.add("strength")
 
     
 class ArmorClass(Component):
@@ -285,7 +285,7 @@ class FlatFooted(Component):
         
     def _filter_modifiers(self):
         ac = self.registry.get("armor-class")
-        dex = self.registry.get("Dexterity")
+        dex = self.registry.get("dexterity")
 
         def is_not_dex(m):
             return m.source is not dex

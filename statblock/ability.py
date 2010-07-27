@@ -28,23 +28,23 @@ class Ability(Component):
 class Strength(Ability):
     
     def id(self):
-        return "Strength"
+        return "strength"
     
     def declare_dependencies(self):
-        self.modified_component_ids.add("BaseMeleeAttack")
+        self.modified_component_ids.add("attack/melee")
         
 
 class Dexterity(Ability):
     
     def id(self):
-        return "Dexterity"
+        return "dexterity"
     
     def declare_dependencies(self):
         self.modified_component_ids = set([
-            "Initiative",
+            "initiative",
             "armor-class",
-            "BaseRangedAttack",
-            "Reflex"
+            "attack/ranged",
+            "reflex"
         ])
         
 
@@ -55,27 +55,27 @@ class Constitution(Ability):
     
     def declare_dependencies(self):
         self.modified_component_ids = set([
-            "HitPoints",
-            "Fortitude"
+            "hit-points",
+            "fortitude"
         ])
         
 
 class Intelligence(Ability):
     
     def id(self):
-        return "Intelligence"
+        return "intelligence"
 
   
 class Wisdom(Ability):
     
     def id(self):
-        return "Wisdom"
+        return "wisdom"
     
     def declare_dependencies(self):
-        self.modified_component_ids.add("Will")
+        self.modified_component_ids.add("will")
         
 
 class Charisma(Ability):
     
     def id(self):
-        return "Charisma"
+        return "charisma"

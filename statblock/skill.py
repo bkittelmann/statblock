@@ -63,27 +63,27 @@ class Skill(Component):
 class Balance(Skill):
     
     def id(self):
-        return "Balance"
+        return "skill/balance"
     
     def declare_dependencies(self):
-        self.affected_component_ids.add("Dexterity")
+        self.affected_component_ids.add("dexterity")
         
         
 class Jump(Skill):
     
     def id(self):
-        return "Jump"
+        return "skill/jump"
         
     def declare_dependencies(self):
-        self.affected_component_ids.add("Strength")
+        self.affected_component_ids.add("strength")
 
         
 class Tumble(Skill):
     
     def id(self):
-        return "Tumble"
+        return "skill/tumble"
     
     def declare_dependencies(self):
-        self.affected_component_ids.add("Dexterity")
-        self.registry.add_action(AddSynergyAction(self, "Balance"))
-        self.registry.add_action(AddSynergyAction(self, "Jump"))
+        self.affected_component_ids.add("dexterity")
+        self.registry.add_action(AddSynergyAction(self, "skill/balance"))
+        self.registry.add_action(AddSynergyAction(self, "skill/jump"))

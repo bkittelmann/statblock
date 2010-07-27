@@ -14,7 +14,7 @@ class ImprovedInitiative(Component):
     
     def __init__(self):
         self.bonus = FeatModifier(+4, self)
-        self.modified_component_ids.add("Initiative")
+        self.modified_component_ids.add("initiative")
         
         
 class WeaponFocus(Component):

@@ -17,7 +17,7 @@ class MeleeAttack(Attack):
         return self.weapon.id() + "/melee/attack"
     
     def declare_dependencies(self):
-        self.affected_component_ids.add("BaseMeleeAttack")
+        self.affected_component_ids.add("attack/melee")
         
 
 class RangedAttack(Attack):
@@ -26,7 +26,7 @@ class RangedAttack(Attack):
         return self.weapon.id() + "/ranged/attack"
     
     def declare_dependencies(self):
-        self.affected_component_ids.add("BaseRangedAttack")
+        self.affected_component_ids.add("attack/ranged")
 
 
 class Damage(Component):
@@ -56,7 +56,7 @@ class MeleeDamage(Damage):
         return self.weapon.id() + "/melee/damage"
     
     def declare_dependencies(self):
-        self.affected_component_ids.add("Strength")
+        self.affected_component_ids.add("strength")
     
     
 class RangedDamage(Damage):
