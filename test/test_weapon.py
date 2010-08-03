@@ -39,5 +39,12 @@ def test_init_ranged_weapon():
     assert not javelin.is_melee()
     
 
+def test_critical_damage():
+    longsword = Longsword()
+    
+    assert longsword.critical.range == range(19, 21)
+    assert longsword.critical.multiplier == 2
+    
+
 if __name__ == '__main__':
     py.cmdline.pytest(["-s", os.path.basename(__file__)])

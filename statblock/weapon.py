@@ -87,6 +87,19 @@ class CombatModifierGroup(VirtualGroup):
     @damage.setter
     def damage(self, new_value):
         self._damage = self.add(new_value)
+    
+
+class Critical(Component):
+    
+    def __init__(self, weapon):
+        super(Critical, self).__init__()
+        self.weapon = weapon
+        self.range = [20]
+        self.multiplier = 2
+
+    
+    def id(self):
+        return self.weapon.id() + "critical"
         
         
 class Weapon(VirtualGroup):
@@ -95,6 +108,7 @@ class Weapon(VirtualGroup):
         super(Weapon, self).__init__()
         self._melee = self.add(CombatModifierGroup())
         self._ranged = self.add(CombatModifierGroup())
+        self.critical = Critical(self)
       
     @property
     def melee(self):
@@ -158,6 +172,7 @@ class Longsword(MeleeWeapon):
     def __init__(self):
         super(Longsword, self).__init__()
         self.damage = d8
+        self.critical.range = [19, 20]
         
     def id(self):
         return "weapon/longsword"
@@ -168,6 +183,7 @@ class Dagger(CombinedWeapon):
     def __init__(self):
         super(Dagger, self).__init__()
         self.damage = d4
+        self.critical.range = [19, 20]
     
     def id(self):
         return "weapon/dagger"
