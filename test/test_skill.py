@@ -41,6 +41,12 @@ def test_wiring_skills():
     assert tumble.bonus.value == 8
     assert balance.value == 4
     
+    
+def test_armor_check_penalty_applies():
+    balance = Balance(3)
+    assert balance.untrained 
+    assert balance.armor_check_penalty == 1
+    
 
 if __name__ == '__main__':
     py.cmdline.pytest(["-s", os.path.basename(__file__)])

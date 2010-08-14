@@ -1,3 +1,4 @@
+from statblock.skill import SkillsGroup
 import re
 
 from statblock.base import VirtualGroup, Component, Modifier, Bonus
@@ -378,7 +379,7 @@ class Character(VirtualGroup):
         self.flat_footed = self.add(FlatFooted())
         self.touch = self.add(Touch())
         
-        self.skills = []
+        self.skills = self.add(SkillsGroup())
         
 
     @property
