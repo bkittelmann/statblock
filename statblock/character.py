@@ -1,3 +1,5 @@
+import re
+
 from statblock.base import VirtualGroup, Component, Modifier, Bonus
 from statblock.base import ComponentProxy
 from statblock.ability import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
@@ -52,6 +54,9 @@ class _Size(Component):
     def id(self):
         return "size"
             
+    def __str__(self):
+        return self.name
+            
     def __repr__(self):
         return "<Size.%s>" % self.name
     
@@ -66,18 +71,28 @@ class Size(object):
     HUGE       = _Size("Huge", -2, + 8)
     GARGANTUAN = _Size("Gargantuan", -4, +12)
     COLLOSAL   = _Size("Collossal", -8, +16)
+
+
+class _Alignment(object):
+    
+    def __init__(self, name):
+        self.long_name = name
+        self.short_name = re.sub("[a-z ]", "", name)
+        
+    def __str__(self):
+        return self.short_name
     
 
 class Alignment(object):
-    LG = "Lawful Good"
-    LN = "Lawful Neutral"
-    LE = "Lawful Evil"
-    NG = "Neutral Good"
-    N  = "Neutral"
-    NE = "Neutral Evil"
-    CG = "Chaotic Good"
-    CN = "Chaotic Neutral"
-    CE = "Chaotic Evil"
+    LG = _Alignment("Lawful Good")
+    LN = _Alignment("Lawful Neutral")
+    LE = _Alignment("Lawful Evil")
+    NG = _Alignment("Neutral Good")
+    N  = _Alignment("Neutral")
+    NE = _Alignment("Neutral Evil")
+    CG = _Alignment("Chaotic Good")
+    CN = _Alignment("Chaotic Neutral")
+    CE = _Alignment("Chaotic Evil")
     
 
 class Fortitude(Component):
@@ -322,18 +337,27 @@ class WeaponsGroup(VirtualGroup):
     pass
 
 
+class MonsterType(object):
+    
+    def __init__(self, name, type, subtypes=None):
+        self.name = name
+        self.type = type
+        self.subtypes = subtypes or []
+        
+
 class Character(VirtualGroup):
     
     def __init__(self):
         super(Character, self).__init__()
         
-        self.race = "Human"
-        self.sex = "Male"
+        self.name = "Tordek"
+        self.type_info = MonsterType("Human", type="Humanoid", subtypes=["Human"])
+        self.gender = "Male"
         self.level = "Warrior 1"
         
         self.hit_points = self.add(HitPoints(initial=8))
         self.initiative = self.add(Initiative(0))
-        self.alignment = Alignment.N
+        self.alignment = Alignment.LG
         self.speed = 30
         self._size = self.add(Size.MEDIUM)
 
@@ -353,6 +377,8 @@ class Character(VirtualGroup):
         self.natural_armor = self.add(NaturalArmor())
         self.flat_footed = self.add(FlatFooted())
         self.touch = self.add(Touch())
+        
+        self.skills = []
         
 
     @property
