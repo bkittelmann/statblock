@@ -118,11 +118,10 @@ class Critical(Component):
         self.weapon = weapon
         self.range = [20]
         self.multiplier = 2
-
     
     def id(self):
         return self.weapon.id() + "critical"
-        
+            
         
 class Weapon(VirtualGroup):
     
@@ -135,6 +134,7 @@ class Weapon(VirtualGroup):
         self.size = "M" # weaponSize as a component?
         self.group = None
         self.category = None
+        self.name = ""
       
     @property
     def melee(self):
@@ -201,6 +201,8 @@ class CombinedWeapon(MeleeWeapon, RangedWeapon):
         MeleeWeapon.set_damage(self, default_damage, type)
         RangedWeapon.set_damage(self, default_damage, type)
         
+        
+# implementations
     
 class Longsword(MeleeWeapon):
     
@@ -211,6 +213,7 @@ class Longsword(MeleeWeapon):
         self.weight = 4
         self.category = ONE_HANDED
         self.group = MARTIAL
+        self.name = "Longsword"
         
     def id(self):
         return "weapon/longsword"
@@ -226,6 +229,7 @@ class Dagger(CombinedWeapon):
         self.weight = 1
         self.category = LIGHT
         self.group = SIMPLE
+        self.name = "Dagger"
     
     def id(self):
         return "weapon/dagger"
@@ -240,8 +244,24 @@ class Javelin(RangedWeapon):
         self.weight = 2
         self.category = RANGED
         self.group = SIMPLE
+        self.name = "Javelin"
         
     def id(self):
         return "weapon/javelin"
+    
+    
+class Longbow(RangedWeapon):
+    
+    def __init__(self):
+        super(Longbow, self).__init__()
+        self.set_damage(d8, PIERCING)
+        self.increment = 100
+        self.weight = 3
+        self.category = RANGED
+        self.group = TWO_HANDED
+        self.name = "Longbow"
+        
+    def id(self):
+        return "weapon/longbow"    
     
     
