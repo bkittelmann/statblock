@@ -79,6 +79,10 @@ class Skill(Component):
 
 class Appraise(Skill):
     
+    @property
+    def name(self):
+        return "Appraise"
+    
     def id(self):
         return "skill/appraise"
     
@@ -87,6 +91,10 @@ class Appraise(Skill):
             
 
 class Balance(Skill):
+    
+    @property
+    def name(self):
+        return "Balance"
     
     @property
     def armor_check_penalty(self):
@@ -100,6 +108,10 @@ class Balance(Skill):
         
         
 class Bluff(Skill):
+    
+    @property
+    def name(self):
+        return "Bluff"
     
     def id(self):
         return "skill/bluff"
@@ -115,6 +127,10 @@ class Bluff(Skill):
 class Climb(Skill):
     
     @property
+    def name(self):
+        return "Climb"
+    
+    @property
     def armor_check_penalty(self):
         return 1
     
@@ -126,6 +142,10 @@ class Climb(Skill):
         
 
 class Concentration(Skill):
+    
+    @property
+    def name(self):
+        return "Concentration"
     
     def id(self):
         return "skill/concentration"
@@ -139,6 +159,10 @@ class Craft(Skill):
     def __init__(self, qualifier, ranks=0):
         super(Craft, self).__init__(ranks=ranks)
         self.qualifier = qualifier
+        
+    @property
+    def name(self):
+        return "Craft (%s)" % self.qualifier
     
     def id(self):
         return "skill/craft-" + self.qualifier
@@ -148,6 +172,10 @@ class Craft(Skill):
         
 
 class DecipherScript(Skill):
+    
+    @property
+    def name(self):
+        return "Decipher Script"
     
     @property
     def untrained(self):
@@ -162,6 +190,10 @@ class DecipherScript(Skill):
 
 class Diplomacy(Skill):
     
+    @property
+    def name(self):
+        return "Diplomacy"
+    
     def id(self):
         return "skill/diplomacy"
     
@@ -170,6 +202,10 @@ class Diplomacy(Skill):
 
 
 class DisableDevice(Skill):
+
+    @property
+    def name(self):
+        return "Disable Device"
 
     @property
     def untrained(self):
@@ -184,6 +220,10 @@ class DisableDevice(Skill):
 
 class Disguise(Skill):
     
+    @property
+    def name(self):
+        return "Disguise"
+    
     def id(self):
         return "skill/disguise"
     
@@ -192,6 +232,10 @@ class Disguise(Skill):
 
 
 class EscapeArtist(Skill):
+    
+    @property
+    def name(self):
+        return "Escape Artist"
     
     @property
     def armor_check_penalty(self):
@@ -206,6 +250,10 @@ class EscapeArtist(Skill):
 
 class Forgery(Skill):
     
+    @property
+    def name(self):
+        return "Forgery"
+    
     def id(self):
         return "skill/forgery"
     
@@ -215,6 +263,10 @@ class Forgery(Skill):
 
 class GatherInformation(Skill):
     
+    @property
+    def name(self):
+        return "Gather Information"
+    
     def id(self):
         return "skill/gather-information"
     
@@ -223,6 +275,10 @@ class GatherInformation(Skill):
 
 
 class HandleAnimal(Skill):
+    
+    @property
+    def name(self):
+        return "Handle Animal"
     
     @property
     def untrained(self):
@@ -238,6 +294,10 @@ class HandleAnimal(Skill):
 
 class Heal(Skill):
     
+    @property
+    def name(self):
+        return "Heal"
+    
     def id(self):
         return "skill/heal"
     
@@ -246,6 +306,10 @@ class Heal(Skill):
 
 
 class Hide(Skill):
+    
+    @property
+    def name(self):
+        return "Hide"
     
     @property
     def armor_check_penalty(self):
@@ -260,6 +324,10 @@ class Hide(Skill):
 
 class Intimidate(Skill):
     
+    @property
+    def name(self):
+        return "Intimidate"
+    
     def id(self):
         return "skill/intimidate"
     
@@ -268,6 +336,10 @@ class Intimidate(Skill):
 
 
 class Jump(Skill):
+    
+    @property
+    def name(self):
+        return "Jump"
     
     @property
     def armor_check_penalty(self):
@@ -284,6 +356,10 @@ class Jump(Skill):
 class KnowledgeArcana(Skill):
     
     @property
+    def name(self):
+        return "Knowledage (Arcana)"
+    
+    @property
     def untrained(self):
         return False
     
@@ -296,6 +372,10 @@ class KnowledgeArcana(Skill):
 
 
 class KnowledgeArchitecture(Skill):
+    
+    @property
+    def name(self):
+        return "Knowledge (Architecture)"
     
     @property
     def untrained(self):
@@ -311,6 +391,10 @@ class KnowledgeArchitecture(Skill):
 class KnowledgeDungeoneering(Skill):
     
     @property
+    def name(self):
+        return "Knowledge (Dungeoneering)"
+    
+    @property
     def untrained(self):
         return False
     
@@ -322,6 +406,10 @@ class KnowledgeDungeoneering(Skill):
 
 
 class KnowledgeGeography(Skill):
+    
+    @property
+    def name(self):
+        return "Knowledge (Geography)"
     
     @property
     def untrained(self):
@@ -337,6 +425,10 @@ class KnowledgeGeography(Skill):
 class KnowledgeHistory(Skill):
     
     @property
+    def name(self):
+        return "Knowledge (History)"
+    
+    @property
     def untrained(self):
         return False
     
@@ -348,6 +440,10 @@ class KnowledgeHistory(Skill):
 
 
 class KnowledgeLocal(Skill):
+    
+    @property
+    def name(self):
+        return "Knowledge (Local)"
     
     @property
     def untrained(self):
@@ -364,6 +460,10 @@ class KnowledgeLocal(Skill):
 class KnowledgeNature(Skill):
     
     @property
+    def name(self):
+        return "Knowledge (Nature)"
+    
+    @property
     def untrained(self):
         return False
     
@@ -375,6 +475,10 @@ class KnowledgeNature(Skill):
 
 
 class KnowledgeNobility(Skill):
+    
+    @property
+    def name(self):
+        return "Knowledge (Nobility)"
     
     @property
     def untrained(self):
@@ -391,6 +495,10 @@ class KnowledgeNobility(Skill):
 class KnowledgeReligion(Skill):
     
     @property
+    def name(self):
+        return "Knowledge (Religion)"
+    
+    @property
     def untrained(self):
         return False
     
@@ -402,6 +510,10 @@ class KnowledgeReligion(Skill):
 
 
 class KnowledgePlanes(Skill):
+    
+    @property
+    def name(self):
+        return "Knowledge (Planes)"
     
     @property
     def untrained(self):
@@ -416,6 +528,10 @@ class KnowledgePlanes(Skill):
 
 class Listen(Skill):
     
+    @property
+    def name(self):
+        return "Listen"
+    
     def id(self):
         return "skill/listen"
     
@@ -424,6 +540,10 @@ class Listen(Skill):
 
 
 class MoveSilently(Skill):
+
+    @property
+    def name(self):
+        return "Move Silently"
     
     @property
     def armor_check_penalty(self):
@@ -437,6 +557,10 @@ class MoveSilently(Skill):
 
 
 class OpenLock(Skill):
+    
+    @property
+    def name(self):
+        return "Open Lock"
     
     @property
     def untrained(self):
@@ -455,6 +579,10 @@ class Perform(Skill):
         super(Craft, self).__init__(ranks=ranks)
         self.qualifier = qualifier
     
+    @property
+    def name(self):
+        return "Perform (%s)" % self.qualifier
+    
     def id(self):
         return "skill/perform-" + self.qualifier
     
@@ -464,13 +592,17 @@ class Perform(Skill):
 
 class Profession(Skill):
 
-    @property
-    def untrained(self):
-        return False
-
     def __init__(self, qualifier, ranks=0):
         super(Craft, self).__init__(ranks=ranks)
         self.qualifier = qualifier
+
+    @property
+    def name(self):
+        return "Profession (%s)" % self.qualifier
+
+    @property
+    def untrained(self):
+        return False
     
     def id(self):
         return "skill/profession-" + self.qualifier
@@ -481,6 +613,10 @@ class Profession(Skill):
 
 class Ride(Skill):
     
+    @property
+    def name(self):
+        return "Ride"
+    
     def id(self):
         return "skill/ride"
     
@@ -489,6 +625,10 @@ class Ride(Skill):
 
 
 class Search(Skill):
+    
+    @property
+    def name(self):
+        return "Search"
     
     def id(self):
         return "skill/search"
@@ -499,6 +639,10 @@ class Search(Skill):
 
 class SenseMotive(Skill):
     
+    @property
+    def name(self):
+        return "Sense Motive"
+    
     def id(self):
         return "skill/sense-motive"
     
@@ -508,6 +652,10 @@ class SenseMotive(Skill):
         
         
 class SleightOfHand(Skill):
+    
+    @property
+    def name(self):
+        return "Sleight Of Hand"
     
     @property
     def armor_check_penalty(self):
@@ -523,6 +671,10 @@ class SleightOfHand(Skill):
 class Spellcraft(Skill):
     
     @property
+    def name(self):
+        return "Spellcraft"
+    
+    @property
     def untrained(self):
         return False
     
@@ -535,6 +687,10 @@ class Spellcraft(Skill):
 
 class Spot(Skill):
     
+    @property
+    def name(self):
+        return "Spot"
+    
     def id(self):
         return "skill/spot"
     
@@ -543,6 +699,10 @@ class Spot(Skill):
 
 
 class Survival(Skill):
+    
+    @property
+    def name(self):
+        return "Survival"
     
     def id(self):
         return "skill/survival"
@@ -553,6 +713,10 @@ class Survival(Skill):
 
 
 class Swim(Skill):
+    
+    @property
+    def name(self):
+        return "Swim"
     
     @property
     def armor_check_penalty(self):
@@ -566,6 +730,10 @@ class Swim(Skill):
 
 
 class Tumble(Skill):
+
+    @property
+    def name(self):
+        return "Tumble"
 
     @property
     def armor_check_penalty(self):
@@ -587,6 +755,10 @@ class Tumble(Skill):
 class UseMagicDevice(Skill):
     
     @property
+    def name(self):
+        return "Use Magic Device"
+    
+    @property
     def untrained(self):
         return False
     
@@ -598,6 +770,10 @@ class UseMagicDevice(Skill):
 
 
 class UseRope(Skill):
+    
+    @property
+    def name(self):
+        return "Use Rope"
     
     def id(self):
         return "skill/use-rope"
