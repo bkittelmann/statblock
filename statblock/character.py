@@ -1,4 +1,5 @@
 from statblock.skill import SkillsGroup
+from statblock.dice import d8
 import re
 
 from statblock.base import VirtualGroup, Component, Modifier, Bonus
@@ -345,6 +346,18 @@ class MonsterType(object):
         self.type = type
         self.subtypes = subtypes or []
         
+        
+class MeleeAttackCombination(object):
+    
+    def __init__(self, weapon):
+        self.weapons = [weapon]
+
+
+class RangedAttackCombination(object):
+    
+    def __init__(self, weapon):
+        self.weapons = [weapon]
+
 
 class Character(VirtualGroup):
     
@@ -357,6 +370,7 @@ class Character(VirtualGroup):
         self.level = "Warrior 1"
         
         self.hit_points = self.add(HitPoints(initial=8))
+        self.hit_dice = d8
         self.initiative = self.add(Initiative(0))
         self.alignment = Alignment.LG
         self.speed = 30
@@ -372,6 +386,9 @@ class Character(VirtualGroup):
         self.attack.ranged = self.add(BaseRangedAttack(0))
         self.attack.grapple = self.add(GrappleAttack(0))
         self.weapons = self.add(WeaponsGroup())
+        
+        self.melee = []
+        self.ranged = []
     
         self._armor = self.add(ComponentProxy("armor"))
         self._shield = self.add(ComponentProxy("shield"))
@@ -380,12 +397,12 @@ class Character(VirtualGroup):
         self.touch = self.add(Touch())
         
         self.skills = self.add(SkillsGroup())
+        self.languages = ["Common"]
         
 
     @property
     def size(self):
         return self._size
-        
         
     @size.setter
     def size(self, new_size):
