@@ -33,7 +33,10 @@ class Die:
         return cls.__new__()
     
     def __repr__(self):
-        return "%sd%s+%s" % (self.multiplicator, self.number, self.modifier)
+        base = "%sd%s" % (self.multiplicator, self.number)
+        if self.modifier > 0:
+            return base + ("+%s" % self.modifier)
+        return base
     
         
     
