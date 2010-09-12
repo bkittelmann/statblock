@@ -90,7 +90,7 @@ def test_adding_a_weapon():
     dagger = Dagger()
     guard.weapons.add(sword)
     guard.weapons.add(dagger)
-    guard.add(WeaponFocus())
+    guard.add(WeaponFocus(sword))
     
     assert sword.melee.attack.value == 4
     assert sword.melee.damage.default == d8

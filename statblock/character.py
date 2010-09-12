@@ -335,10 +335,6 @@ class Touch(Component):
         return reduce(without_armor, ac.modifiers.values(), 10)
 
 
-class WeaponsGroup(VirtualGroup):
-    pass
-
-
 class MonsterType(object):
     
     def __init__(self, name, type, subtypes=None):
@@ -385,7 +381,7 @@ class Character(VirtualGroup):
         self.attack.melee = self.add(BaseMeleeAttack(0))
         self.attack.ranged = self.add(BaseRangedAttack(0))
         self.attack.grapple = self.add(GrappleAttack(0))
-        self.weapons = self.add(WeaponsGroup())
+        self.weapons = self.add(VirtualGroup())
         
         self.melee = []
         self.ranged = []
@@ -397,6 +393,7 @@ class Character(VirtualGroup):
         self.touch = self.add(Touch())
         
         self.skills = self.add(SkillsGroup())
+        self.feats = self.add(VirtualGroup())
         self.languages = ["Common"]
         
 

@@ -262,6 +262,9 @@ class VirtualGroup(Component):
     def on_register(self, registry):
         self.registry = registry.merge(self.registry)
         return False
+    
+    def __iter__(self):
+        return iter(self._components)
         
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
