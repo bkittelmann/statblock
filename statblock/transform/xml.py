@@ -2,10 +2,38 @@ from lxml import etree
 from lxml.builder import ElementMaker
 from xsl import XslRenderer
 
+
+class StatblockTypeMap(dict):
+    
+    def add_object_as_text(self, elem, item):
+        "Transforms object to a string and delegates to ElementMaker's text handling"
+        self.get(str)(elem, str(item))
+    
+    def __nonzero__(self):
+        "Necessary to signify in if-checks that this dict is used"
+        return True
+    
+    def copy(self):
+        "Return a copy of itself, if not overridden dict.copy would be used"
+        return StatblockTypeMap(self.items())
+    
+    def get(self, key):
+        """
+        If the key is the type of an object in statblock's module, return a function
+        that calls str() on the object first before adding the text output. Same happens
+        for 'int' values.
+        """   
+        if key is int:
+            return self.add_object_as_text
+        if isinstance(key, object) and "statblock" in key.__module__:
+            return self.add_object_as_text
+        return super(StatblockTypeMap, self).get(key)
+    
+
 class XmlMarshaller():
     
     def __init__(self):
-        self.element_maker = ElementMaker()
+        self.element_maker = ElementMaker(typemap=StatblockTypeMap())
 
     
     def marshal(self, character):
@@ -17,22 +45,22 @@ class XmlMarshaller():
             self.write_type_info(character),
             
             xml.level(character.level),
-            xml.alignment(str(character.alignment)),
-            xml.size(str(character.size)),
-            xml.initiative(str(character.initiative.value)),
+            xml.alignment(character.alignment),
+            xml.size(character.size),
+            xml.initiative(character.initiative),
             self.write_skills(character),
             self.write_languages(character),
             
             #--- second section ---
             self.write_armor(character),
-            xml("hit-points", str(character.hit_points.value)),
+            xml("hit-points", character.hit_points),
             xml("hit-dice", self.format_hitdice(character.hit_dice)),
             self.write_saving_throws(character),
             
             #--- third section ---
             
             # this will most likely change with different movement methods
-            xml.speed(str(character.speed)),
+            xml.speed(character.speed),
             self.write_base_attacks(character),
             self.write_melee(character),
             self.write_ranged(character),
@@ -62,7 +90,7 @@ class XmlMarshaller():
         xml = self.element_maker
         return xml("type-info",
             xml.name(character.type_info.name),
-            xml.type(str(character.type_info.type)),
+            xml.type(character.type_info.type),
             xml.subtypes(
                 *[xml.subtype(s) for s in character.type_info.subtypes]
             )
@@ -72,33 +100,33 @@ class XmlMarshaller():
     def write_skills(self, character):
         xml = self.element_maker
         return xml.skills(
-            *[xml.skill(xml.value(str(s.value)), name=s.name) for s in character.skills]
+            *[xml.skill(xml.value(s), name=s.name) for s in character.skills]
         )
     
     
     def write_armor(self, character):
         xml = self.element_maker
         return xml("armor-class",
-            xml.value(str(character.armor_class.value)),
-            xml.touch(str(character.touch.value)),
-            xml("flat-footed", str(character.flat_footed.value))
+            xml.value(character.armor_class),
+            xml.touch(character.touch),
+            xml("flat-footed", character.flat_footed)
         )
     
     
     def write_saving_throws(self, character):
         xml = self.element_maker
         return xml("saving-throws",
-            xml.fortitude(str(character.saving_throws.fortitude.value)),
-            xml.reflex(str(character.saving_throws.reflex.value)),
-            xml.will(str(character.saving_throws.will.value))
+            xml.fortitude(character.saving_throws.fortitude),
+            xml.reflex(character.saving_throws.reflex),
+            xml.will(character.saving_throws.will)
         )
     
     
     def write_base_attacks(self, character):
         xml = self.element_maker
         return xml.attack(
-            xml.base(str(character.attack.base.value)),
-            xml.grapple(str(character.attack.grapple.value))
+            xml.base(character.attack.base),
+            xml.grapple(character.attack.grapple)
         )       
 
     
@@ -129,11 +157,11 @@ class XmlMarshaller():
         if len(weapon.critical.range) > 1:
             critical = xml.critical("%s-%s" % (weapon.critical.range[0], weapon.critical.range[-1]))
         elif weapon.critical.multiplier > 1:
-            critical = xml.critical(str(weapon.critical.multiplier))
+            critical = xml.critical(weapon.critical.multiplier)
         
         return xml.weapon(
-            xml.attack(str(combat.attack.value)),
-            xml.damage(str(combat.damage.value)),
+            xml.attack(combat.attack),
+            xml.damage(combat.damage),
             critical,
             id=weapon.id(),
             name=weapon.name            
@@ -141,14 +169,14 @@ class XmlMarshaller():
     
     
     def write_abilities(self, character):
-        xml = self.element_maker
+        xml, _ = self.element_maker, character.abilities
         return xml.abilities(
-            xml.strength(str(character.abilities.strength.value)),
-            xml.dexterity(str(character.abilities.dexterity.value)),
-            xml.constitution(str(character.abilities.constitution.value)),
-            xml.intelligence(str(character.abilities.intelligence.value)),
-            xml.wisdom(str(character.abilities.wisdom.value)),
-            xml.charisma(str(character.abilities.charisma.value))
+            xml.strength(_.strength),
+            xml.dexterity(_.dexterity),
+            xml.constitution(_.constitution),
+            xml.intelligence(_.intelligence),
+            xml.wisdom(_.wisdom),
+            xml.charisma(_.charisma)
         )
     
     

@@ -60,10 +60,13 @@ def test_xhtml():
     assert lang2.strip() == "Draconic"
     
     
+    
 def test_xml():
     xml = XmlTransformer().toXml(build_character())
     output = etree.fromstring(xml)
     assert output.xpath("count(//language)") == 2
+    assert output.xpath("string(//size)") == "Medium"
+    assert output.xpath("number(//initiative)") == 1
 
 
 if __name__ == '__main__':
@@ -78,6 +81,7 @@ bcat can be found at http://rtomayko.github.com/bcat/"""
     parser.add_option('-t', action="store_const", const="test", dest="action", help="run py.test")
     parser.add_option('-x', action="store_const", const="xml", dest="action", help="create xml")
     parser.add_option('-r', action="store_const", const="render", dest="action", help="render xhtml")
+    parser.set_default("action", "test")
     (options, args) = parser.parse_args()
     
     if options.action == "test":
