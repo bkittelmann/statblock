@@ -96,6 +96,9 @@ class Modifiable(object):
     @value.setter
     def value(self, new_value):
         self.initial = new_value
+    
+    def __str__(self):
+        return str(self.value)    
         
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.value)
