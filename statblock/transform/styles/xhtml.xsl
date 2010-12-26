@@ -16,15 +16,13 @@
                 </style>
             </head>
             <body>
-                <div id="stats">
-                    <xsl:apply-templates/>
-                </div>
+                <xsl:apply-templates/>
             </body>
         </html>            
     </xsl:template>
     
     <xsl:template match="character">
-        <div style="margin-left:0;">
+        <div id="stats">
             <h1>
                 <xsl:value-of select="name"/>
             </h1>
@@ -241,7 +239,7 @@
                 <xsl:value-of select="py:upper(substring(name(), 1, 1))"/>
                 <xsl:value-of select="concat(substring(name(), 2, 2), ' ', .)"/>
                 <xsl:if test="position() != last()">
-                    <xsl:text>, </xsl:text>
+                    <xsl:text>,</xsl:text>
                 </xsl:if>
             </xsl:for-each>
         </span>
@@ -251,9 +249,10 @@
         <span>
             <b>Feats</b>
             <xsl:for-each select="*">
+                <xsl:text> </xsl:text>
                 <xsl:value-of select="@name"/>
                 <xsl:if test="position() != last()">
-                    <xsl:text>, </xsl:text>
+                    <xsl:text>,</xsl:text>
                 </xsl:if>
             </xsl:for-each>
         </span>
