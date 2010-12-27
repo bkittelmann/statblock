@@ -1,5 +1,6 @@
 from optparse import OptionParser
 from lxml import etree
+from statblock.transform.xml import StatblockTypeMap
 import py
 
 from statblock.armor import ChainMail
@@ -60,13 +61,21 @@ def test_xhtml():
     assert lang2.strip() == "Draconic"
     
     
-    
 def test_xml():
     xml = XmlTransformer().toXml(build_character())
     output = etree.fromstring(xml)
     assert output.xpath("count(//language)") == 2
     assert output.xpath("string(//size)") == "Medium"
     assert output.xpath("number(//initiative)") == 1
+
+
+def test_typemap_copies_itself():
+    first = StatblockTypeMap()
+    assert isinstance(first.copy(), StatblockTypeMap)
+
+
+def test_typemap_is_treated_as_true_in_boolean_context():
+    assert bool(StatblockTypeMap()) is True
 
 
 if __name__ == '__main__':
