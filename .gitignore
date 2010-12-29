@@ -1,3 +1,4 @@
 *.py[oc]
 .project
 .pydevproject
+fabfile.py
