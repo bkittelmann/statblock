@@ -12,7 +12,8 @@ import os.path
 
 def test_strength_repr():
     s = Strength(12)
-    assert str(s) == "Strength: 12"
+    assert str(s) == "12"
+    assert repr(s) == "Strength: 12"
     
 
 def test_strength_affected():
