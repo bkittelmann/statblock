@@ -1,6 +1,5 @@
 from lxml import etree
 from lxml.builder import ElementMaker
-from xsl import XslRenderer
 
 
 class StatblockTypeMap(dict):
@@ -191,18 +190,10 @@ class XmlTransformer(object):
     
     def __init__(self):
         self.marshaller = XmlMarshaller()
-        self.xsl = XslRenderer()
     
     def toXml(self, character):
         element = self.toElement(character)
         return etree.tostring(element, pretty_print=True)
-    
-    
-    def toXhtml(self, character):
-        element = self.toElement(character)
-        output = self.xsl.render(element, "styles/xhtml.xsl")
-        return etree.tostring(output, pretty_print=True)
-    
     
     def toElement(self, character):                    
         return self.marshaller.marshal(character)
