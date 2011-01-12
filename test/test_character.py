@@ -6,9 +6,6 @@ from statblock.feat import WeaponFocus
 from statblock.weapon import Dagger
 from statblock.ability import Strength
 
-import py
-import os.path
-
 
 def test_strength_repr():
     s = Strength(12)
@@ -103,4 +100,5 @@ def test_adding_a_weapon():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", os.path.basename(__file__)])
+    import pytest, sys
+    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])

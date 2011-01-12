@@ -3,8 +3,7 @@ from statblock.base import EnhancementModifier
 from statblock.base import ModifierSet
 from statblock.feat import FeatModifier
 
-import os.path
-import py
+import pytest
 
 
 def test_bonus_stacks():
@@ -25,14 +24,14 @@ def test_bonusset_init_set_stacks():
 def test_bonusset_reject_other_types():
     mod = EnhancementModifier(+2, object())
     bset = ModifierSet([mod])
-    py.test.raises(TypeError, bset.add, FeatModifier(+4, object()))
+    pytest.raises(TypeError, bset.add, FeatModifier(+4, object()))
     assert len(bset) == 1
     
 
 def test_bonusset_init_and_reject():
     e_mod = EnhancementModifier(+2, object())
     f_mod = FeatModifier(+4, object())
-    py.test.raises(TypeError, ModifierSet, [e_mod, f_mod])
+    pytest.raises(TypeError, ModifierSet, [e_mod, f_mod])
     
     
 def test_bonusset_calculate_not_stackable():
@@ -51,5 +50,6 @@ def test_bonusset_calculate_stackable():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", os.path.basename(__file__)])
+    import sys
+    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])
 

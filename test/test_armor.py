@@ -3,8 +3,6 @@ from statblock.armor import ChainMail
 from statblock.armor import LightSteelShield
 from statblock.armor import HeavySteelShield
 
-import py
-import os.path
 
 def test_adding_chainmail():
     guard = Character()
@@ -66,4 +64,5 @@ def test_that_old_armor_bonus_gets_removed():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", os.path.basename(__file__)])
+    import pytest, sys
+    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])

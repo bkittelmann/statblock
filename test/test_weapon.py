@@ -4,9 +4,6 @@ from statblock.weapon import Javelin
 from statblock.weapon import Longsword
 from statblock.weapon import SLASHING
 
-import os.path
-import py
-
 
 def test_init_combined_weapon():
     axe_throwing = CombinedWeapon()
@@ -50,4 +47,5 @@ def test_critical_damage():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", os.path.basename(__file__)])
+    import pytest, sys
+    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])

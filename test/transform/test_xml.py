@@ -60,4 +60,5 @@ def test_typemap_is_treated_as_true_in_boolean_context():
 
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", os.path.basename(__file__)])
+    import pytest, sys
+    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])

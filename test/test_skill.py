@@ -7,8 +7,7 @@ from statblock.ability import Dexterity
 from statblock.skill import Jump
 from statblock.skill import Skill
 
-import py
-import os.path
+import pytest
 
 
 def test_skill_general_methods():
@@ -23,7 +22,7 @@ def test_skill_general_methods():
     assert skill.bonus.value == 2
     
     # using fractions other than 0.5 are disallowed
-    py.test.raises(Exception, "skill.ranks = 4.2")
+    pytest.raises(Exception, "skill.ranks = 4.2")
     
 
 def test_wiring_skills():
@@ -49,4 +48,5 @@ def test_armor_check_penalty_applies():
     
 
 if __name__ == '__main__':
-    py.cmdline.pytest(["-s", os.path.basename(__file__)])
+    import sys
+    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])
