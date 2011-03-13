@@ -308,6 +308,9 @@ class ComponentProxy(Component):
     def value(self, new_value):
         self._target.value = new_value
         
+    def __repr__(self):
+        return repr(self._target)
+        
             
 #--- concrete implementations of modifiers -----------------------------------------
     
