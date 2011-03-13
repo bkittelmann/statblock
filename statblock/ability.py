@@ -20,6 +20,9 @@ class Ability(Component):
     def __init__(self, *args, **kwargs):
         super(Ability, self).__init__(*args, **kwargs)
         self.bonus = AbilityModifier(self)
+        
+    def is_destroyable(self):
+        return False
     
     def __repr__(self):
         return "%s: %s" % (self.__class__.__name__, self.value)

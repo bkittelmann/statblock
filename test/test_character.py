@@ -98,6 +98,15 @@ def test_adding_a_weapon():
     assert dagger.ranged.attack.value == 1
     assert dagger.ranged.damage.value == d4 
     
+    
+def test_that_vital_objects_like_dexterity_can_not_be_destroyed():
+    guard = Character()
+    guard.abilities.dexterity = 12
+    assert guard.armor_class.value == 11
+    
+    guard.abilities.dexterity.destroy()
+    assert guard.armor_class.value == 11
+    
 
 if __name__ == '__main__':
     import pytest, sys
