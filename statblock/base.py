@@ -197,9 +197,16 @@ class AbstractComponent(object):
         self._components.append(component)
         self._registry.set(component)
         return component
-    
+             
+    def destroy(self):
+        "Subclasses need to override to define what would happen on destroy"
+        pass
+
     def id(self):
         return self._id
+
+    def is_destroyable(self):
+        return True
     
     def on_register(self, registry):
         # It might be that the component has already actions set,
@@ -256,6 +263,8 @@ class Component(Modifiable, AbstractComponent):
     
     
     def destroy(self):
+        if not self.is_destroyable():
+            return
         for m in self.modified_component_ids:
             self.registry.get(m).remove(self.bonus)
 
@@ -291,8 +300,9 @@ class ComponentProxy(Component):
         self._target.affects(self, other)
 
     def destroy(self):
-        self._components.remove(self._target)
-        self._target.destroy()
+        if self.is_destroyable():
+            self._components.remove(self._target)
+            self._target.destroy()
 
     def remove(self, modifier):
         self._target.remove(modifier)
