@@ -1,5 +1,5 @@
 from statblock.base import Bonus
-from statblock.base import Component
+from statblock.base import EssentialComponent
 from statblock.base import Modifier
 
 import math
@@ -15,14 +15,11 @@ class AbilityModifier(Modifier):
         return int(math.floor((self.source.value - 10) / 2))    
     
 
-class Ability(Component):
+class Ability(EssentialComponent):
     
     def __init__(self, *args, **kwargs):
         super(Ability, self).__init__(*args, **kwargs)
         self.bonus = AbilityModifier(self)
-        
-    def is_destroyable(self):
-        return False
     
     def __repr__(self):
         return "%s: %s" % (self.__class__.__name__, self.value)
