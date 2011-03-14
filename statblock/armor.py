@@ -44,6 +44,9 @@ class NaturalArmor(Component):
     def id(self):
         return "natural-armor"
     
+    def is_destroyable(self):
+        return False
+    
     def declare_dependencies(self):
         self.modified_component_ids.add("armor-class")
         
