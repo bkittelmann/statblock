@@ -1,9 +1,9 @@
 from statblock.base import Bonus
-from statblock.base import Component
 from statblock.base import Modifier
 from statblock.base import VirtualGroup
 
 import math
+from statblock.base import EssentialComponent
 
 class SkillModifier(Modifier):
     
@@ -39,7 +39,11 @@ class SynergyAction(object):
         self.done = True
         
         
-class Skill(Component):
+# Should skills be destroyable or not destroyable? Untrained ones would always
+# be usable by any character regardless of ranks. So they should exist always.
+# But should other skills be lost... this could only happen if the player
+# reassigns skill ranks. Probably an advanced feature.   
+class Skill(EssentialComponent):
     
     def __init__(self, ranks=0):
         super(Skill, self).__init__(initial=ranks)

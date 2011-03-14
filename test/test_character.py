@@ -5,6 +5,7 @@ from statblock.dice import d4, d8
 from statblock.feat import WeaponFocus
 from statblock.weapon import Dagger
 from statblock.ability import Strength
+from statblock.skill import Tumble
 
 
 def test_strength_repr():
@@ -106,6 +107,12 @@ def test_that_vital_objects_like_dexterity_can_not_be_destroyed():
     
     guard.abilities.dexterity.destroy()
     assert guard.armor_class.value == 11
+
+    # trigger skill synergy    
+    guard.skills.jump.value = 5
+    guard.add(Tumble(5))
+    guard.skills.jump.destroy()
+    assert guard.registry.get("skill/tumble").value == 8
     
 
 if __name__ == '__main__':
