@@ -269,15 +269,6 @@ class Component(Modifiable, AbstractComponent):
             self.registry.get(m).remove(self.bonus)
             
 
-class EssentialComponent(Component):
-    """
-    Can not be destroyed from a registry, used for essential
-    functionality like HitPoints, abilities etc.
-    """
-    def is_destroyable(self):
-        return False
-    
-
 class VirtualGroup(Component):
     
     def on_register(self, registry):
