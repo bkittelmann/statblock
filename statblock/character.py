@@ -55,6 +55,9 @@ class _Size(Component):
     
     def id(self):
         return "size"
+    
+    def is_destroyable(self):
+        return True
             
     def __str__(self):
         return self.name
@@ -101,6 +104,9 @@ class Fortitude(Component):
     
     def id(self):
         return "fortitude"
+    
+    def is_destroyable(self):
+        return False
 
 
 class Reflex(Component):
@@ -108,12 +114,18 @@ class Reflex(Component):
     def id(self):
         return "reflex"
     
+    def is_destroyable(self):
+        return False
+    
 
 class Will(Component):
     
     def id(self):
         return "will"
 
+    def is_destroyable(self):
+        return False
+    
 
 class SavingThrowGroup(VirtualGroup):
     
@@ -216,13 +228,19 @@ class HitPoints(Component):
     
     def id(self):
         return "hit-points"     
+
+    def is_destroyable(self):
+        return False
     
     
 class Initiative(Component):
     
     def id(self):
         return "initiative"
-    
+
+    def is_destroyable(self):
+        return False
+
     def __repr__(self):
         return "Initiative: %s" % self.value
 
@@ -235,6 +253,9 @@ class BaseAttack(Component):
     
     def id(self):
         return "attack/base"
+    
+    def is_destroyable(self):
+        return False
     
     def declare_dependencies(self):
         self.modified_component_ids.add("attack/melee")
@@ -258,6 +279,9 @@ class BaseMeleeAttack(Component):
     
     def id(self):
         return "attack/melee"   
+
+    def is_destroyable(self):
+        return False
     
 
 class BaseRangedAttack(Component):
@@ -268,6 +292,9 @@ class BaseRangedAttack(Component):
     
     def id(self):
         return "attack/ranged"
+
+    def is_destroyable(self):
+        return False
     
 
 class GrappleAttack(Component):
@@ -278,6 +305,9 @@ class GrappleAttack(Component):
     
     def id(self):
         return "attack/grapple"
+
+    def is_destroyable(self):
+        return False
     
     def declare_dependencies(self):
         self.affected_component_ids.add("attack/base")
@@ -288,12 +318,18 @@ class ArmorClass(Component):
     
     def id(self):
         return "armor-class"
+
+    def is_destroyable(self):
+        return False
     
     
 class FlatFooted(Component):
     
     def id(self):
         return "flat-footed"
+
+    def is_destroyable(self):
+        return False
     
     @property
     def value(self):
@@ -317,6 +353,9 @@ class Touch(Component):
     
     def id(self):
         return "touch"
+
+    def is_destroyable(self):
+        return False
     
     @property
     def value(self):
