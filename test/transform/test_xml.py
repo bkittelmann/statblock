@@ -1,6 +1,4 @@
 from lxml import etree
-import os
-import py
 
 from statblock.armor import ChainMail
 from statblock.character import Character

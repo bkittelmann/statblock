@@ -1,101 +1,76 @@
-class _Bonus(object):
-    
-    def __init__(self, name, stackable):
-        self.name = name
-        self.stackable = stackable
-        
-    def __repr__(self):
-        return self.name.upper()
-        
-    def stacks(self):
-        return self.stackable
-    
+from itertools import groupby
 
-# TODO
-class Bonus(object):
-    UNTYPED         = _Bonus("untyped",       True)
-    ENHANCEMENT     = _Bonus("enhancement",   False)
-    SIZE            = _Bonus("size",          False)
-    ARMOR           = _Bonus("armor",         False)
-    SHIELD          = _Bonus("shield",        False)
-    NATURAL_ARMOR   = _Bonus("natural-armor", False)
-    
 
-class ModifierSet(set):
-    
-    def __init__(self, modifiers=[]):
-        self._type = modifiers[0].type
-        map(self.add, modifiers)
-        
-                
-    def add(self, modifier):
-        if modifier.type != self._type:
-            raise TypeError("%s does not have bonus of %s" % (modifier, self._type))
-        super(ModifierSet, self).add(modifier)
-        
-    def stacks(self):
-        return self._type.stacks()
-    
-    
-    def calculate(self, initial, ignore_func=lambda m: True):
-        func = self._add_all if self.stacks() else self._get_highest
-        return func(initial, ignore_func)
-    
-    
-    def _add_all(self, initial, ignore_func):
-        filter_result = filter(ignore_func, self)
-        return reduce(lambda a, b: a + b.value, filter_result, initial)
-    
-        
-    def _get_highest(self, initial, ignore_func):
-        filter_result = filter(ignore_func, self)
-        highest = sorted(filter_result, key=lambda m: m.value, reverse=True)
-        return initial + (highest[0].value if len(highest) > 0 else 0)
-    
-    
+def calculate_modifier_sum(modifiers):
+    "Default algorithm to calculate the sum of all modifiers values."
+    def add(klass, group): 
+        if klass.stackable:
+            return sum(group) 
+        return max(group).value
+    return sum(add(k, g) for k, g in groupby(modifiers, type))
+
+
 class Modifier(object):
-        
-    def __init__(self, type, value, source):
-        self.type = type
+    stackable = False    
+    
+    def __init__(self, value, source=None):
+        assert isinstance(value, int)
         self._value = value
-        self.source = source
-        
-    def __hash__(self):
-        return self.source.__hash__()
+        self._source = source or object()
     
-    def __eq__(self, other):
-        return other.source == self.source
-    
-    def __repr__(self):
-        return "<Modifier %s to %s, source %s>" % (self.type, self.value, self.source.__class__.__name__)
+    @property
+    def source(self):
+        return self._source
     
     @property
     def value(self):
         return self._value
+    
+    def __add__(self, other):
+        return self.value + int(other)
+
+    def __radd__(self, other):
+        return self + other
+        
+    def __gt__(self, other):
+        return self.value > other.value
+    
+    def __int__(self):
+        return self.value
+    
+    def __hash__(self):
+        return self._source.__hash__()
+    
+    def __eq__(self, other):
+        return other._source == self._source
+    
+    def __repr__(self):
+        return "<%s: %+i>" % (self.__class__.__name__, self.value)
+    
+    def stacks(self):
+        return self.__class__.stackable
 
 
 class Modifiable(object):
     
     def __init__(self, initial=0):
-        self.initial = initial
-        self.modifiers = {}
+        self._initial = initial
+        self._modifiers = set()
         
-    def update(self, modifier):
-        modifier_set = self.modifiers.setdefault(modifier.type, ModifierSet([modifier]))
-        modifier_set.add(modifier)
+    def update(self, *modifiers):
+        for m in modifiers:
+            self._modifiers.add(m)
         
     def remove(self, modifier):
-        self.modifiers[modifier.type].remove(modifier)
-        if len(self.modifiers[modifier.type]) == 0:
-            del self.modifiers[modifier.type]
+        self._modifiers.remove(modifier)
         
     @property
     def value(self):
-        return reduce(lambda a, b: a + b.calculate(0), self.modifiers.values(), self.initial)
+        return self._initial + calculate_modifier_sum(self._modifiers)
     
     @value.setter
     def value(self, new_value):
-        self.initial = new_value
+        self._initial = new_value
     
     def __str__(self):
         return str(self.value)    
@@ -322,10 +297,35 @@ class ComponentProxy(Component):
         return repr(self._target)
         
             
-#--- concrete implementations of modifiers -----------------------------------------
+#--- concrete implementations of _modifiers -----------------------------------------
     
-class EnhancementModifier(Modifier):
-    
-    def __init__(self, value, source):
-        Modifier.__init__(self, Bonus.ENHANCEMENT, value, source)
+class EnhancementModifier(Modifier): 
+    pass
         
+class UntypedModifier(Modifier): 
+    stackable = True
+
+class SizeModifier(Modifier): 
+    pass      
+
+
+class ArmorModifier(Modifier):
+    
+    def __init__(self, source):
+        Modifier.__init__(self, source.value, source)
+
+
+class NaturalArmorModifier(Modifier):
+    
+    def __init__(self, source):
+        Modifier.__init__(self, source.value, source)
+        
+    @property
+    def value(self):
+        return self.source.value
+
+
+class ShieldModifier(Modifier):
+    
+    def __init__(self, source):
+        Modifier.__init__(self, source.value, source)

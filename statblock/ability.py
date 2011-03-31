@@ -1,4 +1,3 @@
-from statblock.base import Bonus
 from statblock.base import Component
 from statblock.base import Modifier
 
@@ -6,9 +5,10 @@ import math
 
 
 class AbilityModifier(Modifier):
+    stackable = True
     
     def __init__(self, source):
-        Modifier.__init__(self, Bonus.UNTYPED, source.value, source)
+        Modifier.__init__(self, source.value, source)
         
     @property
     def value(self):

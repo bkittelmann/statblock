@@ -1,28 +1,8 @@
 from statblock.base import Component
 from statblock.base import Modifier
-from statblock.base import Bonus
-
-
-class ArmorModifier(Modifier):
-    
-    def __init__(self, source):
-        Modifier.__init__(self, Bonus.ARMOR, source.value, source)
-
-
-class NaturalArmorModifier(Modifier):
-    
-    def __init__(self, source):
-        Modifier.__init__(self, Bonus.NATURAL_ARMOR, source.value, source)
-        
-    @property
-    def value(self):
-        return self.source.value
-
-
-class ShieldModifier(Modifier):
-    
-    def __init__(self, source):
-        Modifier.__init__(self, Bonus.SHIELD, source.value, source)
+from statblock.base import ArmorModifier
+from statblock.base import NaturalArmorModifier
+from statblock.base import ShieldModifier
 
 
 class Armor(Component):

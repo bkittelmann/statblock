@@ -1,17 +1,22 @@
-from statblock.skill import SkillsGroup
-from statblock.dice import d8
 import re
 
-from statblock.base import VirtualGroup, Component, Modifier, Bonus
+from statblock.base import ArmorModifier, NaturalArmorModifier, ShieldModifier
+from statblock.base import VirtualGroup, Component, Modifier
 from statblock.base import ComponentProxy
+from statblock.base import ModifyOtherAction
+from statblock.base import SizeModifier
+from statblock.base import calculate_modifier_sum
 from statblock.ability import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
 from statblock.armor import NaturalArmor
-from statblock.base import ModifyOtherAction
+from statblock.dice import d8
+from statblock.skill import SkillsGroup
+
 
 class ValueModifier(Modifier):
+    stackable = True    
     
     def __init__(self, source):
-        Modifier.__init__(self, Bonus.UNTYPED, source.value, source)
+        Modifier.__init__(self, source.value, source)
         
     @property
     def value(self):
@@ -19,19 +24,20 @@ class ValueModifier(Modifier):
 
 
 class SizeAttackModifier(Modifier):
+    stackable = True
     
     def __init__(self, source):
-        Modifier.__init__(self, Bonus.SIZE, source.value, source)
+        Modifier.__init__(self, source.value, source)
         
     @property
     def value(self):
         return self.source.attack
     
 
-class SizeGrappleModifier(Modifier):
+class SizeGrappleModifier(SizeModifier):
 
     def __init__(self, source):
-        Modifier.__init__(self, Bonus.SIZE, source.value, source)
+        Modifier.__init__(self, source.value, source)
         
     @property
     def value(self):
@@ -333,7 +339,7 @@ class FlatFooted(Component):
     
     @property
     def value(self):
-        self.initial = self._filter_modifiers()
+        self._initial = self._filter_modifiers()
         return Component.value.fget(self)
         
     def _filter_modifiers(self):
@@ -343,10 +349,7 @@ class FlatFooted(Component):
         def is_not_dex(m):
             return m.source is not dex
         
-        def without_dex(a, b):
-            return a + b.calculate(0, ignore_func=is_not_dex)
-        
-        return reduce(without_dex, ac.modifiers.values(), 10)
+        return 10 + calculate_modifier_sum(filter(is_not_dex, ac._modifiers))
     
     
 class Touch(Component):
@@ -359,19 +362,18 @@ class Touch(Component):
     
     @property
     def value(self):
-        self.initial = self._filter_modifiers()
+        self._initial = self._filter_modifiers()
         return Component.value.fget(self)
         
     def _filter_modifiers(self):
         ac = self.registry.get("armor-class")
-        
         def no_armor(m):
-            return m.type not in (Bonus.ARMOR, Bonus.SHIELD, Bonus.NATURAL_ARMOR)
-        
-        def without_armor(a, b):
-            return a + b.calculate(0, ignore_func=no_armor)
-        
-        return reduce(without_armor, ac.modifiers.values(), 10)
+            return type(m) not in [
+               ArmorModifier, 
+               NaturalArmorModifier, 
+               ShieldModifier
+            ]
+        return 10 + calculate_modifier_sum(filter(no_armor, ac._modifiers))
 
 
 class MonsterType(object):

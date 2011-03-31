@@ -1,4 +1,3 @@
-from statblock.base import Bonus
 from statblock.base import Component
 from statblock.base import Modifier
 
@@ -6,7 +5,7 @@ from statblock.base import Modifier
 class FeatModifier(Modifier):
     
     def __init__(self, value, source):
-        Modifier.__init__(self, Bonus.UNTYPED, value, source)
+        Modifier.__init__(self, value, source)
 
 
 class Feat(Component):

@@ -2,6 +2,7 @@ from statblock.dice import Die
 from statblock.dice import d4, d6, d8
 from statblock.base import VirtualGroup
 from statblock.base import Component
+from statblock.base import calculate_modifier_sum
 
 #--- some constants about damage types --------------------------------
 PIERCING    = "piercing"
@@ -64,13 +65,9 @@ class Damage(Component):
         return Die(
             self.default.number, 
             multiplicator=self.default.multiplicator, 
-            modifier=self.default.modifier + self._calculate_modifiers()
+            modifier=self.default.modifier + calculate_modifier_sum(self._modifiers)
         )
-    
-    def _calculate_modifiers(self):
-        "Since value() is overridden, we need this method to sum up the modifiers."
-        return reduce(lambda a, b: a + b.calculate(0), self.modifiers.values(), self.initial)
-    
+
 
 class MeleeDamage(Damage):
     

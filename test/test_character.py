@@ -21,7 +21,7 @@ def test_strength_affected():
     assert guard.abilities.strength.value == 16
     assert guard.attack.melee.value == 3
     
-    guard.abilities.strength.initial -= 4
+    guard.abilities.strength._initial -= 4
     assert guard.abilities.strength.value == 12
     assert guard.attack.melee.value == 1
     

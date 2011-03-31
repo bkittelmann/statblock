@@ -1,4 +1,3 @@
-from statblock.base import Bonus
 from statblock.base import Component
 from statblock.base import Modifier
 from statblock.base import VirtualGroup
@@ -6,9 +5,10 @@ from statblock.base import VirtualGroup
 import math
 
 class SkillModifier(Modifier):
+    stackable = True
     
     def __init__(self, skill):
-        Modifier.__init__(self, Bonus.UNTYPED, skill.ranks, skill)
+        Modifier.__init__(self, skill.ranks, skill)
         
     @property
     def value(self):
@@ -16,9 +16,10 @@ class SkillModifier(Modifier):
         
 
 class SynergyModifier(Modifier):
+    stackable = True
     
     def __init__(self, skill):
-        Modifier.__init__(self, Bonus.UNTYPED, skill.ranks, skill)
+        Modifier.__init__(self, skill.ranks, skill)
         
     @property
     def value(self):
@@ -68,14 +69,14 @@ class Skill(Component):
     def value(self, other):
         if (other % 0.5) != 0:
             raise Exception("Only fractions of 0.5 can be set as ranks")
-        self.initial = other
+        self._initial = other
         
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.value)
         
     @property
     def ranks(self):
-        return self.initial
+        return self._initial
     
     @ranks.setter
     def ranks(self, new_value):
