@@ -244,7 +244,7 @@ class Component(Modifiable, AbstractComponent):
             self.registry.get(m).remove(self.bonus)
             
 
-class VirtualGroup(Component):
+class VirtualGroup(AbstractComponent):
     
     def on_register(self, registry):
         self.registry = registry.merge(self.registry)
