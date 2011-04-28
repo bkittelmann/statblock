@@ -1,4 +1,5 @@
 from statblock.base import Component
+from statblock.base import LinkBuilder
 from statblock.base import Modifier
 
 import math
@@ -19,66 +20,55 @@ class Ability(Component):
     
     def __init__(self, *args, **kwargs):
         super(Ability, self).__init__(*args, **kwargs)
-        self.bonus = AbilityModifier(self)
+        self._default_bonus = AbilityModifier(self)
     
     def is_destroyable(self):
         return False
     
     def __repr__(self):
         return "%s: %s" % (self.__class__.__name__, self.value)
+    
+        
+class Dexterity(Ability):
+    
+    def __init__(self, initial=0):
+        super(Dexterity, self).__init__("dexterity", initial)
+        LinkBuilder(self).modifies(
+            "armor-class",
+            "attack/ranged",
+            "reflex",
+            "initiative"
+        )
         
 
 class Strength(Ability):
     
-    def id(self):
-        return "strength"
-    
-    def declare_dependencies(self):
-        self.modified_component_ids.add("attack/melee")
-        
-
-class Dexterity(Ability):
-    
-    def id(self):
-        return "dexterity"
-    
-    def declare_dependencies(self):
-        self.modified_component_ids = set([
-            "initiative",
-            "armor-class",
-            "attack/ranged",
-            "reflex"
-        ])
+    def __init__(self, initial=0):
+        super(Strength, self).__init__("strength", initial)
+        LinkBuilder(self).modifies("attack/melee")
         
 
 class Constitution(Ability):
     
-    def id(self):
-        return "Constitution"
-    
-    def declare_dependencies(self):
-        self.modified_component_ids = set([
-            "hit-points",
-            "fortitude"
-        ])
-        
+    def __init__(self, initial=0):
+        super(Constitution, self).__init__("constitution", initial)
+        LinkBuilder(self).modifies("hit-points", "fortitude")
+
 
 class Intelligence(Ability):
     
-    def id(self):
-        return "intelligence"
+    def __init__(self, initial=0):
+        super(Intelligence, self).__init__("intelligence", initial)
 
   
 class Wisdom(Ability):
     
-    def id(self):
-        return "wisdom"
-    
-    def declare_dependencies(self):
-        self.modified_component_ids.add("will")
-        
+    def __init__(self, initial=0):
+        super(Wisdom, self).__init__("wisdom", initial)
+        LinkBuilder(self).modifies("will")
+
 
 class Charisma(Ability):
     
-    def id(self):
-        return "charisma"
+    def __init__(self, initial=0):
+        super(Charisma, self).__init__("charisma", initial)

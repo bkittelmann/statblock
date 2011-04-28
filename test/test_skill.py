@@ -1,17 +1,14 @@
-from statblock.skill import Tumble
+import pytest
+
+from statblock.character import ActorBuilder
 from statblock.skill import Balance
-from statblock.base import AbstractComponent
-from statblock.character import Initiative
-from statblock.ability import Strength
-from statblock.ability import Dexterity
 from statblock.skill import Jump
 from statblock.skill import Skill
-
-import pytest
+from statblock.skill import Tumble
 
 
 def test_skill_general_methods():
-    skill = Skill(ranks=4)
+    skill = Skill("nothing", ranks=4)
     assert skill.ranks == 4
     assert skill.value == 4
     
@@ -22,20 +19,20 @@ def test_skill_general_methods():
     assert skill.bonus.value == 2
     
     # using fractions other than 0.5 are disallowed
-    pytest.raises(Exception, "skill.ranks = 4.2")
+    with pytest.raises(Exception):
+        skill.ranks = 4.2
     
 
 def test_wiring_skills():
     tumble = Tumble(6)
     balance = Balance(0)
     
-    character = AbstractComponent()
-    character.add(balance)
-    character.add(Initiative(0))
-    character.add(Strength(8))
-    character.add(Dexterity(14))
-    character.add(Jump(0))
-    character.add(tumble)
+    character = ActorBuilder().build()
+    character.add_component(balance)
+    character.strength.value = 8
+    character.dexterity.value = 14
+    character.add_component(Jump(0))
+    character.add_component(tumble)
     
     assert tumble.bonus.value == 8
     assert balance.value == 4

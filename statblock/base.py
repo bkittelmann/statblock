@@ -57,6 +57,9 @@ class Modifiable(object):
         self._initial = initial
         self._modifiers = set()
         
+    def is_modifiable(self):
+        return True
+        
     def update(self, *modifiers):
         for m in modifiers:
             self._modifiers.add(m)
@@ -82,228 +85,173 @@ class Modifiable(object):
 #--- basic registry architecture --------------------------------------
     
 class Registry(object):
-    "A default registry that is more friendly to its clients"
     
     def __init__(self):
         self._components = {}
-        self._actions = set()
         
-    def add_action(self, action):
-        self._actions.add(action)
-
-    @property
-    def actions(self):
-        return self._actions
-
     @property
     def components(self):
         return self._components.values()
         
     def set(self, component):
-        if component.on_register(self):
-            self._actions.update(component.dependency_actions())
-            self._components[component.id()] = component
-        self.wire()
-            
-    def get(self, component_id):
-        return self._components[component_id]
-    
-    def has(self, component_id):
-        return component_id in self._components
-    
-    def merge(self, other):
-        for component in other.components:
-            self.set(component)
-        self._actions.update(other._actions)
-        return self
-    
-    def wire(self):
-        remove_later = []
-        for action in self._actions:
-            try:
-                action.execute(self)
-                if action.done:
-                    remove_later.append(action)
-            except Exception as e:
-                # TODO: Add logging
-                #print e.__class__, e
-                pass
-        # remove finished actions
-        for action in remove_later:
-            self._actions.remove(action)
-    
-
-class ModifyOtherAction(object):
-    
-    def __init__(self, component, id, bonus=None):
-        self.done = False
-        self.component = component
-        self.id = id
-        self.bonus = bonus
-    
-    def execute(self, registry):
-        self.component.affects(registry.get(self.id), bonus=self.bonus)
-        self.done = True
-        
-        
-class DependsOnAction(object):
-    
-    def __init__(self, component, id):
-        self.done = False
-        self.component = component
-        self.id = id
-    
-    def execute(self, registry):
-        registry.get(self.id).affects(self.component)
-        self.done = True
-
-
-class AbstractComponent(object):
-    
-    def __init__(self, id=None):
-        self._registry = Registry()
-        self._id = id
-        self._components = []
-        
-    def add(self, component):
-        if self._registry.has(component.id()):
-            self._registry.get(component.id()).destroy()
-            
-        self._components.append(component)
-        self._registry.set(component)
+        self._components[component.id] = component
+        for child in component.subcomponents:
+            self.set(child)
         return component
-             
-    def destroy(self):
-        "Subclasses need to override to define what would happen on destroy"
-        pass
+            
+    def get(self, id):
+        return self._components[id]
+    
+    def has(self, id):
+        return id in self._components
+    
 
+class Component(Modifiable):
+    
+    def __init__(self, id, *args, **kwargs):
+        super(Component, self).__init__(*args, **kwargs)
+        self._id = id
+        self._links = set()
+        self._default_bonus = None
+        self._subcomponents = set()
+    
+    @property
+    def bonus(self):
+        return self._default_bonus
+    
+    @property
     def id(self):
         return self._id
-
-    def is_destroyable(self):
-        return True
-    
-    def on_register(self, registry):
-        # It might be that the component has already actions set,
-        # which are only expressed as dependencies of its child
-        # components. In this case we need to copy those over to
-        # the new registry, otherwise they get erased.
-        registry.actions.update(self.registry.actions)
-        self.registry = registry
-        return True
     
     @property
-    def registry(self):
-        return self._registry    
+    def links(self):
+        return self._links
     
-    @registry.setter
-    def registry(self, new_registry):
-        self._registry = new_registry
-        for component in self._components:
-            component.registry = new_registry
+    @property
+    def subcomponents(self):
+        return self._subcomponents
     
     def __repr__(self):
-        return "<Component '%s'>" % self.id()
-        
+        return "<Component '%s'>" % self._id
+    
 
-class Component(Modifiable, AbstractComponent):
+#--- basic character/actor building blocks ------------------------------------------
+        
+class Actor(object):
     
-    def __init__(self, initial=0):
-        AbstractComponent.__init__(self)
-        Modifiable.__init__(self, initial=initial)
-                
-        # TODO: Refactor these out into sth else
-        self.modified_component_ids = set()
-        self.affected_component_ids = set()
-        self.bonus = None
-        
-        
-    def affects(self, other, bonus=None):
-        self.modified_component_ids.add(other.id())
-        other.update(bonus or self.bonus)
-        
-        
-    def dependency_actions(self):
-        self.declare_dependencies()
-        actions = []
-        for id in self.modified_component_ids:
-            actions.append(ModifyOtherAction(self, id))
-        for id in self.affected_component_ids:
-            actions.append(DependsOnAction(self, id))
-        return actions
-        
-    # template method to be used by child classes 
-    def declare_dependencies(self):
-        pass
-    
-    
-    def destroy(self):
-        if not self.is_destroyable():
-            return
-        for m in self.modified_component_ids:
-            self.registry.get(m).remove(self.bonus)
-            
+    def __init__(self):
+        self.registry = Registry()
+        self.linker = LinkProcessor(self.registry)
 
-class VirtualGroup(AbstractComponent):
-    
-    def on_register(self, registry):
-        self.registry = registry.merge(self.registry)
-        return False
-    
-    def __iter__(self):
-        return iter(self._components)
+        
+class Link(object):
+    "Links a particular modifier to another component"
+    def __init__(self, source, target, modifier):
+        self.source = source
+        self.target = target
+        self.modifier = modifier
+        
+    def connect(self, registry):
+        registry.get(self.target).update(self.modifier)
         
     def __repr__(self):
-        return "<%s>" % self.__class__.__name__
-            
-
-class ComponentProxy(Component):
-    
-    def __init__(self, id):
-        super(ComponentProxy, self).__init__()
-        self._id = id
-        self._target = Component()
-        self._components.append(self._target)
-        
-    # make it possible to one and only child component
-    def add(self, component):
-        self.destroy()
-        self._target = Component.add(self, component)
-        return self
+        return "<Link: '%s' adds a %s to '%s'>" % (
+            self.source, self.modifier, self.target
+        )
      
-    def affects(self, other):
-        self._target.affects(self, other)
-
-    def destroy(self):
-        if self.is_destroyable():
-            self._components.remove(self._target)
-            self._target.destroy()
-
-    def remove(self, modifier):
-        self._target.remove(modifier)
         
-    def update(self, modifier):
-        self._target.update(modifier)
+class ReverseLink(object):
+    "Depend on another component's default modifier"    
+    def __init__(self, source, target):
+        self.source = source
+        self.target = target
         
-    @property
-    def value(self):
-        return self._target.value
-    
-    @value.setter
-    def value(self, new_value):
-        self._target.value = new_value
+    def connect(self, registry):
+        source_obj = registry.get(self.source)
+        registry.get(self.target).update(source_obj.bonus)
         
     def __repr__(self):
-        return repr(self._target)
+        return "<ReverseLink: '%s' is modified by '%s'>" % (
+            self.target, self.source
+        )
         
+        
+class UseLink(object):
+    "Use all modifiers of a source to the target"    
+    def __init__(self, source, target):
+        self.source = source
+        self.target = target
+        
+    def connect(self, registry):
+        source_obj = registry.get(self.source)
+        registry.get(self.target).update(*source_obj._modifiers)
+        
+    def __repr__(self):
+        return "<UseLink: '%s' uses all modifiers from '%s'>" % (
+            self.target, self.source
+        )
+        
+     
+class LinkProcessor(object):
+    
+    def __init__(self, registry):
+        self.registry = registry
+        self.unapplied = set()
+    
+    def apply(self, modifiable):
+        for link in modifiable.links:
+            try:
+                link.connect(self.registry)
+            except KeyError:
+                self.unapplied.add(link)
+        
+    def process_all(self):
+        for c in self.registry.components:
+            self.apply(c)
+   
+    def remove(self, modifiable):
+        self._run(modifiable, lambda c, m: c.remove(m))
+            
+    def _run(self, modifiable, callback):
+        for link in modifiable.links:
+            callback(self.registry.get(link.target), link.modifier)
+            
+
+class LinkBuilder(object):
+    
+    def __init__(self, component):
+        self._component = component
+        
+    def uses_all_from(self, provider):
+        "Uses the same modifiers as the target it links to"
+        self._component._links.add(UseLink(provider, self._component.id))
+        return self
+        
+        
+    def modifies(self, *targets, **kwargs):
+        bonus = kwargs.get("bonus", self._component.bonus)
+        for target in targets:
+            self._component._links.add(Link(self._component.id, target, bonus))
+        return self
+    
+    def is_modified_by(self, *targets):
+        for target in targets:
+            self._component._links.add(ReverseLink(target, self._component.id))
+        return self
+    
+    def build(self):
+        return self._component.links
+            
             
 #--- concrete implementations of _modifiers -----------------------------------------
     
 class EnhancementModifier(Modifier): 
     pass
         
+
 class UntypedModifier(Modifier): 
     stackable = True
+
 
 class SizeModifier(Modifier): 
     pass      
@@ -315,17 +263,22 @@ class ArmorModifier(Modifier):
         Modifier.__init__(self, source.value, source)
 
 
-class NaturalArmorModifier(Modifier):
+class ShieldModifier(Modifier):
+    
+    def __init__(self, source):
+        Modifier.__init__(self, source.value, source)
+        
+        
+class ValueModifier(Modifier):
+    stackable = True    
     
     def __init__(self, source):
         Modifier.__init__(self, source.value, source)
         
     @property
     def value(self):
-        return self.source.value
+        return self.source.value  
 
 
-class ShieldModifier(Modifier):
-    
-    def __init__(self, source):
-        Modifier.__init__(self, source.value, source)
+class NaturalArmorModifier(ValueModifier):
+    pass

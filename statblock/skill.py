@@ -1,8 +1,9 @@
-from statblock.base import Component
-from statblock.base import Modifier
-from statblock.base import VirtualGroup
-
 import math
+
+from statblock.base import Component
+from statblock.base import LinkBuilder
+from statblock.base import Modifier
+
 
 class SkillModifier(Modifier):
     stackable = True
@@ -46,9 +47,9 @@ class SynergyAction(object):
 # reassigns skill ranks. Probably an advanced feature.   
 class Skill(Component):
     
-    def __init__(self, ranks=0):
-        super(Skill, self).__init__(initial=ranks)
-        self.bonus = SkillModifier(self)
+    def __init__(self, id, ranks=0):
+        super(Skill, self).__init__(id, initial=ranks)
+        self._default_bonus = SkillModifier(self)
         
     @property
     def armor_check_penalty(self):
@@ -100,6 +101,10 @@ class Appraise(Skill):
 
 class Balance(Skill):
     
+    def __init__(self, ranks):
+        super(Balance, self).__init__("skill/balance", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
+    
     @property
     def name(self):
         return "Balance"
@@ -108,12 +113,6 @@ class Balance(Skill):
     def armor_check_penalty(self):
         return 1
     
-    def id(self):
-        return "skill/balance"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
-        
         
 class Bluff(Skill):
     
@@ -345,6 +344,11 @@ class Intimidate(Skill):
 
 class Jump(Skill):
     
+    def __init__(self, ranks):
+        super(Jump, self).__init__("skill/jump", ranks)
+        LinkBuilder(self).is_modified_by("strength")
+        LinkBuilder(self).modifies("skill/tumble", bonus=SynergyModifier(self))
+    
     @property
     def name(self):
         return "Jump"
@@ -352,13 +356,6 @@ class Jump(Skill):
     @property
     def armor_check_penalty(self):
         return 1
-    
-    def id(self):
-        return "skill/jump"
-        
-    def declare_dependencies(self):
-        self.affected_component_ids.add("strength")
-        self.registry.add_action(SynergyAction(self, "skill/tumble"))
 
 
 class KnowledgeArcana(Skill):
@@ -738,6 +735,11 @@ class Swim(Skill):
 
 
 class Tumble(Skill):
+    
+    def __init__(self, ranks):
+        super(Tumble, self).__init__("skill/tumble", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
+        LinkBuilder(self).modifies("skill/balance", "skill/jump", bonus=SynergyModifier(self))
 
     @property
     def name(self):
@@ -751,14 +753,6 @@ class Tumble(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/tumble"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
-        self.registry.add_action(SynergyAction(self, "skill/balance"))
-        self.registry.add_action(SynergyAction(self, "skill/jump"))
-
 
 class UseMagicDevice(Skill):
     
@@ -789,38 +783,4 @@ class UseRope(Skill):
     def declare_dependencies(self):
         self.affected_component_ids.add("dexterity")
 
-
-#--- Group object or use in Character ---------------------------------
-
-class SkillsGroup(VirtualGroup):
-    
-    def __init__(self):
-        super(SkillsGroup, self).__init__()
-        self.appraise = self.add(Appraise(0))
-        self.balance = self.add(Balance(0))
-        self.bluff = self.add(Bluff(0))
-        self.climb = self.add(Climb(0))
-        self.concentration = self.add(Concentration(0))
-        self.diplomacy = self.add(Diplomacy(0))
-        self.disguise = self.add(Disguise(0))
-        self.escape_artist = self.add(EscapeArtist(0))
-        self.forgery = self.add(Forgery(0))
-        self.gather_information = self.add(GatherInformation(0))
-        self.heal = self.add(Heal(0))
-        self.hide = self.add(Hide(0))
-        self.intimidate = self.add(Intimidate(0))
-        self.jump = self.add(Jump(0))
-        self.listen = self.add(Listen(0))
-        self.move_silently = self.add(MoveSilently(0))
-        self.open_lock = self.add(OpenLock(0))
-        self.ride = self.add(Ride(0))
-        self.search = self.add(Search(0))
-        self.sense_motive = self.add(SenseMotive(0))
-        self.spot = self.add(Spot(0))
-        self.survival = self.add(Survival(0))
-        self.swim = self.add(Swim(0))
-        self.use_rope = self.add(UseRope(0))
-    
-    def __iter__(self):
-        return iter(self._components)
     

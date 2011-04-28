@@ -6,8 +6,7 @@ from statblock.weapon import SLASHING
 
 
 def test_init_combined_weapon():
-    axe_throwing = CombinedWeapon()
-    axe_throwing.id = lambda: "axe-throwing"
+    axe_throwing = CombinedWeapon("axe-throwing")
     axe_throwing.set_damage(d6, SLASHING)
     
     assert axe_throwing.is_melee()

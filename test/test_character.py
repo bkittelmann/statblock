@@ -1,11 +1,14 @@
+import pytest
+
+from statblock.ability import Strength
+from statblock.character import ActorBuilder
 from statblock.character import Character
 from statblock.character import Size
-from statblock.weapon import Longsword
 from statblock.dice import d4, d8
 from statblock.feat import WeaponFocus
-from statblock.weapon import Dagger
-from statblock.ability import Strength
 from statblock.skill import Tumble
+from statblock.weapon import Longsword
+from statblock.weapon import Dagger
 
 
 def test_strength_repr():
@@ -15,61 +18,64 @@ def test_strength_repr():
     
 
 def test_strength_affected():
-    guard = Character()
+    guard = ActorBuilder().build()
     
-    guard.abilities.strength = 16
-    assert guard.abilities.strength.value == 16
+    guard.configure("strength", 16)
+    assert guard.strength.value == 16
     assert guard.attack.melee.value == 3
     
-    guard.abilities.strength._initial -= 4
-    assert guard.abilities.strength.value == 12
+    guard.configure("strength", 12)
+    assert guard.strength.value == 12
     assert guard.attack.melee.value == 1
     
     
 def test_dexterity_affected():
-    guard = Character()
-    guard.abilities.dexterity = 8
+    guard = ActorBuilder().build()
+    guard.dexterity = 8
     assert guard.armor_class.value == 9
     assert guard.attack.ranged.value == -1
-    assert guard.saving_throws.reflex.value == -1
+    assert guard.reflex.value == -1
 
     
 def test_constitution_affected():
     guard = Character()
-    guard.abilities.constitution = 13
+    guard.constitution = 13
     assert guard.hit_points.value == 9
-    assert guard.saving_throws.fortitude.value == 1
+    assert guard.fortitude.value == 1
     
-    guard.abilities.constitution = 5
+    guard.constitution = 5
     assert guard.hit_points.value == 5
     
     
 def test_wisdom_affected():
     guard = Character()
-    guard.abilities.wisdom = 14
-    assert guard.saving_throws.will.value == +2
+    guard.wisdom = 14
+    assert guard.will.value == +2
     
     
 def test_base_attack():
-    guard = Character()
+    guard = ActorBuilder().build()
     guard.attack.base.value += 1
-    guard.abilities.strength = 15
-    guard.abilities.dexterity = 12
+    assert guard.attack.melee.value == 1
+    
+    guard.strength = 15
+    guard.dexterity = 12
     
     assert guard.attack.melee.value == 3
     assert guard.attack.ranged.value == 2
     
 
 def test_grapple_attack():
-    guard = Character()
+    guard = ActorBuilder().build()
     guard.attack.base.value += 3
-    guard.abilities.strength = 16
-    guard.size = Size.LARGE
+    guard.strength = 16
+    guard.configure("size", Size.LARGE)
+    assert guard.size == Size.LARGE
     assert guard.attack.grapple.value == 10
     
 
 def test_size_effects():
-    guard = Character()
+    guard = ActorBuilder().build()
     guard.size = Size.LARGE
     assert guard.attack.base.value == -1
     assert guard.armor_class.value == 9
@@ -80,16 +86,15 @@ def test_size_effects():
  
  
 def test_adding_a_weapon():
-    guard = Character()
-    guard.abilities.strength.value = 16
-    guard.abilities.dexterity.value = 13
-    guard.registry.actions.clear()
+    guard = ActorBuilder().build()
+    guard.strength.value = 16
+    guard.dexterity.value = 13
     
     sword = Longsword()
     dagger = Dagger()
-    guard.weapons.add(sword)
-    guard.weapons.add(dagger)
-    guard.add(WeaponFocus(sword))
+    guard.add_component(sword)
+    guard.add_component(dagger)
+    guard.add_component(WeaponFocus(sword))
     
     assert sword.melee.attack.value == 4
     assert sword.melee.damage.default == d8
@@ -99,22 +104,24 @@ def test_adding_a_weapon():
     assert dagger.ranged.attack.value == 1
     assert dagger.ranged.damage.value == d4 
     
-    
+@pytest.mark.xfail(reason="need base rewrite")
 def test_that_vital_objects_like_dexterity_can_not_be_destroyed():
-    guard = Character()
-    guard.abilities.dexterity = 12
+    ## needs to be rewritten, Character/Actor should do removal
+    
+    guard = ActorBuilder().build()
+    guard.dexterity = 12
     assert guard.armor_class.value == 11
     
-    guard.abilities.dexterity.destroy()
+    guard.dexterity.destroy()
     assert guard.armor_class.value == 11
 
     # trigger skill synergy    
-    guard.skills.jump.value = 5
+    guard.jump.value = 5
     guard.add(Tumble(5))
-    guard.skills.jump.destroy()
+    guard.jump.destroy()
     assert guard.registry.get("skill/tumble").value == 8
     
 
 if __name__ == '__main__':
     import pytest, sys
-    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])
+    pytest.main(["-s", "-v", "-k", "size_effects"] + sys.argv[1:] + [__file__])

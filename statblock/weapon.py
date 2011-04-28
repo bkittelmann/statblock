@@ -1,8 +1,9 @@
 from statblock.dice import Die
 from statblock.dice import d4, d6, d8
-from statblock.base import VirtualGroup
 from statblock.base import Component
+from statblock.base import LinkBuilder
 from statblock.base import calculate_modifier_sum
+
 
 #--- some constants about damage types --------------------------------
 PIERCING    = "piercing"
@@ -28,34 +29,28 @@ EXOTIC  = "exotic"
 
 class Attack(Component):
 
-    def __init__(self, weapon):
-        super(Attack, self).__init__()
-        self.weapon = weapon
+    def __init__(self, *args, **kwargs):
+        super(Attack, self).__init__(*args, **kwargs)
 
 
 class MeleeAttack(Attack):
     
-    def id(self):
-        return self.weapon.id() + "/melee/attack"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("attack/melee")
+    def __init__(self, weapon):
+        super(MeleeAttack, self).__init__(weapon.id + "/melee/attack")
+        LinkBuilder(self).is_modified_by("attack/melee")
         
 
 class RangedAttack(Attack):
     
-    def id(self):
-        return self.weapon.id() + "/ranged/attack"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("attack/ranged")
+    def __init__(self, weapon):
+        super(RangedAttack, self).__init__(weapon.id + "/ranged/attack")
+        LinkBuilder(self).is_modified_by("attack/ranged")
 
 
 class Damage(Component):
     
-    def __init__(self, weapon, default, type):
-        super(Damage, self).__init__()
-        self.weapon = weapon
+    def __init__(self, id, default, type):
+        super(Damage, self).__init__(id)
         self.default = default
         self.type = type
     
@@ -71,23 +66,20 @@ class Damage(Component):
 
 class MeleeDamage(Damage):
     
-    def id(self):
-        return self.weapon.id() + "/melee/damage"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("strength")
-    
+    def __init__(self, weapon, default, type):
+        super(MeleeDamage, self).__init__(weapon.id + "/melee/damage", default, type)
+        LinkBuilder(self).is_modified_by("strength")
+
     
 class RangedDamage(Damage):
     
-    def id(self):
-        return self.weapon.id() + "/ranged/damage"
+    def __init__(self, weapon, default, type):
+        super(RangedDamage, self).__init__(weapon.id + "/ranged/damage", default, type)
     
 
-class CombatModifierGroup(VirtualGroup):
+class CombatModifierGroup(object):
     
-    def __init__(self):
-        super(CombatModifierGroup, self).__init__()
+    def __init__(self, owner):
         self._attack = None
         self._damage = None
         
@@ -97,7 +89,7 @@ class CombatModifierGroup(VirtualGroup):
     
     @attack.setter
     def attack(self, new_value):
-        self._attack = self.add(new_value)
+        self._attack = new_value
         
     @property
     def damage(self):
@@ -105,27 +97,24 @@ class CombatModifierGroup(VirtualGroup):
     
     @damage.setter
     def damage(self, new_value):
-        self._damage = self.add(new_value)
+        self._damage = new_value
     
 
 class Critical(Component):
     
     def __init__(self, weapon):
-        super(Critical, self).__init__()
+        super(Critical, self).__init__(weapon.id + "/critical")
         self.weapon = weapon
         self.range = [20]
         self.multiplier = 2
     
-    def id(self):
-        return self.weapon.id() + "critical"
-            
         
-class Weapon(VirtualGroup):
+class Weapon(Component):
     
-    def __init__(self):
-        super(Weapon, self).__init__()
-        self._melee = self.add(CombatModifierGroup())
-        self._ranged = self.add(CombatModifierGroup())
+    def __init__(self, id):
+        super(Weapon, self).__init__(id)
+        self._melee = CombatModifierGroup(self)
+        self._ranged = CombatModifierGroup(self)
         self.critical = Critical(self)
         self.weight = 0
         self.size = "M" # weaponSize as a component?
@@ -150,16 +139,21 @@ class Weapon(VirtualGroup):
     
 class MeleeWeapon(Weapon):
     
-    def __init__(self):
-        super(MeleeWeapon, self).__init__()
+    def __init__(self, id):
+        super(MeleeWeapon, self).__init__(id)
 
     @property
     def damage(self):
         return self._melee.damage
     
     def set_damage(self, default_damage, type):
-        self._melee.attack = MeleeAttack(self)
-        self._melee.damage = MeleeDamage(self, default_damage, type)        
+        attack = MeleeAttack(self)
+        self._subcomponents.add(attack)
+        self._melee.attack = attack
+        
+        damage = MeleeDamage(self, default_damage, type)
+        self._subcomponents.add(damage)
+        self._melee.damage = damage        
 
     def is_melee(self):
         return True
@@ -167,8 +161,8 @@ class MeleeWeapon(Weapon):
     
 class RangedWeapon(Weapon):
     
-    def __init__(self):
-        super(RangedWeapon, self).__init__()
+    def __init__(self, id):
+        super(RangedWeapon, self).__init__(id)
         self.increment = 10 # assumed default
     
     @property
@@ -176,19 +170,22 @@ class RangedWeapon(Weapon):
         return self._ranged.damage
       
     def set_damage(self, default_damage, type):
-        self._ranged.attack = RangedAttack(self)
-        self._ranged.damage = RangedDamage(self, default_damage, type)        
+        attack = RangedAttack(self)
+        self._subcomponents.add(attack)
+        self._ranged.attack = attack
+        
+        damage = RangedDamage(self, default_damage, type)
+        self._subcomponents.add(damage)
+        self._ranged.damage = damage        
 
     def is_ranged(self):
         return True
     
-#    damage = property(fset=damage)
-    
     
 class CombinedWeapon(MeleeWeapon, RangedWeapon):
     
-    def __init__(self):
-        super(CombinedWeapon, self).__init__()
+    def __init__(self, id):
+        super(CombinedWeapon, self).__init__(id)
     
     @property
     def damage(self):
@@ -200,26 +197,25 @@ class CombinedWeapon(MeleeWeapon, RangedWeapon):
         
         
 # implementations
-    
+
+## they would need to add their 
+
 class Longsword(MeleeWeapon):
     
     def __init__(self):
-        super(Longsword, self).__init__()
+        super(Longsword, self).__init__("weapon/longsword")
         self.set_damage(d8, SLASHING)
         self.critical.range = [19, 20]
         self.weight = 4
         self.category = ONE_HANDED
         self.group = MARTIAL
         self.name = "Longsword"
-        
-    def id(self):
-        return "weapon/longsword"
     
     
 class Dagger(CombinedWeapon):
     
     def __init__(self):
-        super(Dagger, self).__init__()
+        super(Dagger, self).__init__("weapon/dagger")
         self.set_damage(d4, PIERCING)
         self.critical.range = [19, 20]
         self.increment = 10
@@ -228,14 +224,11 @@ class Dagger(CombinedWeapon):
         self.group = SIMPLE
         self.name = "Dagger"
     
-    def id(self):
-        return "weapon/dagger"
-    
 
 class Javelin(RangedWeapon):
     
     def __init__(self):
-        super(Javelin, self).__init__()
+        super(Javelin, self).__init__("weapon/javelin")
         self.set_damage(d6, PIERCING)
         self.increment = 30
         self.weight = 2
@@ -243,22 +236,14 @@ class Javelin(RangedWeapon):
         self.group = SIMPLE
         self.name = "Javelin"
         
-    def id(self):
-        return "weapon/javelin"
-    
     
 class Longbow(RangedWeapon):
     
     def __init__(self):
-        super(Longbow, self).__init__()
+        super(Longbow, self).__init__("weapon/longbow")
         self.set_damage(d8, PIERCING)
         self.increment = 100
         self.weight = 3
         self.category = RANGED
         self.group = TWO_HANDED
         self.name = "Longbow"
-        
-    def id(self):
-        return "weapon/longbow"    
-    
-    
