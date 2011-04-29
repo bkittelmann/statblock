@@ -215,6 +215,8 @@ class LinkProcessor(object):
             self.apply(c)
    
     def remove(self, modifiable):
+        for component in modifiable.subcomponents:
+            self.remove(component)
         self._run(modifiable, lambda c, m: c.remove(m))
             
     def _run(self, modifiable, callback):
