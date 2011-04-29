@@ -105,6 +105,11 @@ class Registry(object):
     def has(self, id):
         return id in self._components
     
+    def remove(self, id):
+        for child in self.get(id).subcomponents:
+            self.remove(child)
+        del self._components[id]
+
 
 class Component(Modifiable):
     
