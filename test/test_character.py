@@ -1,12 +1,9 @@
-import pytest
-
 from statblock.ability import Strength
 from statblock.character import ActorBuilder
 from statblock.character import Character
 from statblock.character import Size
 from statblock.dice import d4, d8
 from statblock.feat import WeaponFocus
-from statblock.skill import Tumble
 from statblock.weapon import Longsword
 from statblock.weapon import Dagger
 
@@ -104,24 +101,23 @@ def test_adding_a_weapon():
     assert dagger.ranged.attack.value == 1
     assert dagger.ranged.damage.value == d4 
     
-@pytest.mark.xfail(reason="need base rewrite")
-def test_that_vital_objects_like_dexterity_can_not_be_destroyed():
-    ## needs to be rewritten, Character/Actor should do removal
     
+def test_that_vital_objects_like_dexterity_can_not_be_destroyed():
     guard = ActorBuilder().build()
     guard.dexterity = 12
     assert guard.armor_class.value == 11
     
-    guard.dexterity.destroy()
+    guard.remove_component("dexterity")
     assert guard.armor_class.value == 11
 
-    # trigger skill synergy    
-    guard.jump.value = 5
-    guard.add(Tumble(5))
-    guard.jump.destroy()
+    guard.registry.get("skill/jump").value = 5
+    guard.configure("skill/tumble", 5)
+    guard.remove_component("skill/jump")
+    
     assert guard.registry.get("skill/tumble").value == 8
+    assert guard.registry.has("skill/jump")
     
 
 if __name__ == '__main__':
     import pytest, sys
-    pytest.main(["-s", "-v", "-k", "size_effects"] + sys.argv[1:] + [__file__])
+    pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])
