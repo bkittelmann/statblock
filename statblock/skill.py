@@ -27,20 +27,6 @@ class SynergyModifier(Modifier):
         return +2 if self.source.ranks >= 5 else 0
 
 
-class SynergyAction(object):
-    
-    def __init__(self, component, target_id):
-        self.done = False
-        self.component = component
-        self.target_id = target_id
-    
-    def execute(self, registry):
-        other = registry.get(self.target_id)
-        self.component.modified_component_ids.add(self.target_id)
-        other.update(SynergyModifier(self.component))
-        self.done = True
-        
-        
 # Should skills be destroyable or not destroyable? Untrained ones would always
 # be usable by any character regardless of ranks. So they should exist always.
 # But should other skills be lost... this could only happen if the player
@@ -88,20 +74,18 @@ class Skill(Component):
 
 class Appraise(Skill):
     
+    def __init__(self, ranks=0):
+        super(Appraise, self).__init__("skill/appraise", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
+    
     @property
     def name(self):
         return "Appraise"
-    
-    def id(self):
-        return "skill/appraise"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
             
 
 class Balance(Skill):
     
-    def __init__(self, ranks):
+    def __init__(self, ranks=0):
         super(Balance, self).__init__("skill/balance", ranks)
         LinkBuilder(self).is_modified_by("dexterity")
     
@@ -116,22 +100,24 @@ class Balance(Skill):
         
 class Bluff(Skill):
     
+    def __init__(self, ranks=0):
+        super(Bluff, self).__init__("skill/bluff", ranks)
+        LinkBuilder(self).is_modified_by("charisma").modifies(
+            "skill/diplomacy", "skill/disguise",
+            "skill/intimidate", "skill/sleight-of-hand",
+            bonus=SynergyModifier(self)
+        )
+    
     @property
     def name(self):
         return "Bluff"
-    
-    def id(self):
-        return "skill/bluff"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
-        self.registry.add_action(SynergyAction(self, "skill/diplomacy"))
-        self.registry.add_action(SynergyAction(self, "skill/disguise"))
-        self.registry.add_action(SynergyAction(self, "skill/intimidate"))
-        self.registry.add_action(SynergyAction(self, "skill/sleight-of-hand"))
-        
+          
 
 class Climb(Skill):
+    
+    def __init__(self, ranks=0):
+        super(Climb, self).__init__("skill/climb", ranks)
+        LinkBuilder(self).is_modified_by("strength")
     
     @property
     def name(self):
@@ -141,44 +127,35 @@ class Climb(Skill):
     def armor_check_penalty(self):
         return 1
     
-    def id(self):
-        return "skill/climb"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("strength")
-        
 
 class Concentration(Skill):
+    
+    def __init__(self, ranks=0):
+        super(Concentration, self).__init__("skill/concentration", ranks)
+        LinkBuilder(self).is_modified_by("constitution")
     
     @property
     def name(self):
         return "Concentration"
     
-    def id(self):
-        return "skill/concentration"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("constitution")
-                
         
 class Craft(Skill):
 
     def __init__(self, qualifier, ranks=0):
-        super(Craft, self).__init__(ranks=ranks)
+        super(Craft, self).__init__("skill/craft-" + self.qualifier.lower(), ranks=ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
         self.qualifier = qualifier
         
     @property
     def name(self):
         return "Craft (%s)" % self.qualifier
-    
-    def id(self):
-        return "skill/craft-" + self.qualifier
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
         
 
 class DecipherScript(Skill):
+    
+    def __init__(self, ranks=0):
+        super(DecipherScript, self).__init__("skill/decipherScript", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
@@ -187,28 +164,24 @@ class DecipherScript(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/decipher-script"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
 
 
 class Diplomacy(Skill):
+
+    def __init__(self, ranks=0):
+        super(Diplomacy, self).__init__("skill/diplomacy", ranks)
+        LinkBuilder(self).is_modified_by("charisma")
     
     @property
     def name(self):
         return "Diplomacy"
-    
-    def id(self):
-        return "skill/diplomacy"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
 
 
 class DisableDevice(Skill):
+
+    def __init__(self, ranks=0):
+        super(DisableDevice, self).__init__("skill/disable-device", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
 
     @property
     def name(self):
@@ -218,27 +191,23 @@ class DisableDevice(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/disable-device"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-
 
 class Disguise(Skill):
     
+    def __init__(self, ranks=0):
+        super(Disguise, self).__init__("skill/disguise", ranks)
+        LinkBuilder(self).is_modified_by("charisma")
+        
     @property
     def name(self):
         return "Disguise"
     
-    def id(self):
-        return "skill/disguise"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
-
 
 class EscapeArtist(Skill):
+
+    def __init__(self, ranks=0):
+        super(EscapeArtist, self).__init__("skill/escape-artist", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
     
     @property
     def name(self):
@@ -248,41 +217,36 @@ class EscapeArtist(Skill):
     def armor_check_penalty(self):
         return 1
         
-    def id(self):
-        return "skill/escape-artist"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
-
 
 class Forgery(Skill):
+    
+    def __init__(self, ranks=0):
+        super(Forgery, self).__init__("skill/forgery", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
         return "Forgery"
     
-    def id(self):
-        return "skill/forgery"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-
 
 class GatherInformation(Skill):
+
+    def __init__(self, ranks=0):
+        super(GatherInformation, self).__init__("skill/gather-information", ranks)
+        LinkBuilder(self).is_modified_by("charisma")
     
     @property
     def name(self):
         return "Gather Information"
     
-    def id(self):
-        return "skill/gather-information"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
-
 
 class HandleAnimal(Skill):
     
+    def __init__(self, ranks=0):
+        super(HandleAnimal, self).__init__("skill/handle-animal", ranks)
+        LinkBuilder(self).is_modified_by("charisma")
+        LinkBuilder(self).modifies("skill/ride", bonus=SynergyModifier(self))
+        
     @property
     def name(self):
         return "Handle Animal"
@@ -291,29 +255,24 @@ class HandleAnimal(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/handle-animal"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
-        self.registry.add_action(SynergyAction(self, "skill/ride"))
-
 
 class Heal(Skill):
+    
+    def __init__(self, ranks=0):
+        super(Heal, self).__init__("skill/heal", ranks)
+        LinkBuilder(self).is_modified_by("wisdom")
     
     @property
     def name(self):
         return "Heal"
     
-    def id(self):
-        return "skill/heal"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("wisdom")
-
 
 class Hide(Skill):
     
+    def __init__(self, ranks=0):
+        super(Hide, self).__init__("skill/hide", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
+        
     @property
     def name(self):
         return "Hide"
@@ -321,30 +280,22 @@ class Hide(Skill):
     @property
     def armor_check_penalty(self):
         return 1
-    
-    def id(self):
-        return "skill/hide"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
 
 
 class Intimidate(Skill):
+
+    def __init__(self, ranks=0):
+        super(Intimidate, self).__init__("skill/intimidate", ranks)
+        LinkBuilder(self).is_modified_by("charisma")
     
     @property
     def name(self):
         return "Intimidate"
     
-    def id(self):
-        return "skill/intimidate"
     
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
-
-
 class Jump(Skill):
     
-    def __init__(self, ranks):
+    def __init__(self, ranks=0):
         super(Jump, self).__init__("skill/jump", ranks)
         LinkBuilder(self).is_modified_by("strength")
         LinkBuilder(self).modifies("skill/tumble", bonus=SynergyModifier(self))
@@ -360,6 +311,11 @@ class Jump(Skill):
 
 class KnowledgeArcana(Skill):
     
+    def __init__(self, ranks=0):
+        super(KnowledgeArcana, self).__init__("skill/knowledge-arcana", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
+        LinkBuilder(self).modifies("skill/spellcraft", bonus=SynergyModifier(self))
+    
     @property
     def name(self):
         return "Knowledage (Arcana)"
@@ -368,15 +324,12 @@ class KnowledgeArcana(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/knowledge-arcana"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-        self.registry.add_action(SynergyAction(self, "skill/spellcraft"))
-
 
 class KnowledgeArchitecture(Skill):
+    
+    def __init__(self, ranks=0):
+        super(KnowledgeArchitecture, self).__init__("skill/knowledge-architecture", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
@@ -386,14 +339,12 @@ class KnowledgeArchitecture(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/knowledge-architecture"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-
 
 class KnowledgeDungeoneering(Skill):
+
+    def __init__(self, ranks=0):
+        super(KnowledgeDungeoneering, self).__init__("skill/knowledge-dungeoneering", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
@@ -402,16 +353,14 @@ class KnowledgeDungeoneering(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/knowledge-dungeoneering"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
 
 
 class KnowledgeGeography(Skill):
     
+    def __init__(self, ranks=0):
+        super(KnowledgeGeography, self).__init__("skill/knowledge-geography", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
+        
     @property
     def name(self):
         return "Knowledge (Geography)"
@@ -419,15 +368,13 @@ class KnowledgeGeography(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/knowledge-geography"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
 
 
 class KnowledgeHistory(Skill):
+    
+    def __init__(self, ranks=0):
+        super(KnowledgeHistory, self).__init__("skill/knowledge-history", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
@@ -437,14 +384,13 @@ class KnowledgeHistory(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/knowledge-history"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-
 
 class KnowledgeLocal(Skill):
+
+    def __init__(self, ranks=0):
+        super(KnowledgeLocal, self).__init__("skill/knowledge-local", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
+        LinkBuilder(self).modifies("skill/gather-information", bonus=SynergyModifier(self))
     
     @property
     def name(self):
@@ -454,15 +400,12 @@ class KnowledgeLocal(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/knowledge-local"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-        self.registry.add_action(SynergyAction(self, "skill/gather-information"))
-
 
 class KnowledgeNature(Skill):
+    
+    def __init__(self, ranks=0):
+        super(KnowledgeNature, self).__init__("skill/knowledge-nature", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
@@ -471,15 +414,14 @@ class KnowledgeNature(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/knowledge-nature"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
 
 
 class KnowledgeNobility(Skill):
+
+    def __init__(self, ranks=0):
+        super(KnowledgeNobility, self).__init__("skill/knowledge-nobility", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
+        LinkBuilder(self).modifies("skill/diplomacy", bonus=SynergyModifier(self))
     
     @property
     def name(self):
@@ -488,17 +430,14 @@ class KnowledgeNobility(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/knowledge-nobility"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-        self.registry.add_action(SynergyAction(self, "skill/diplomacy"))
 
 
 class KnowledgeReligion(Skill):
     
+    def __init__(self, ranks=0):
+        super(KnowledgeReligion, self).__init__("skill/knowledge-religion", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
+        
     @property
     def name(self):
         return "Knowledge (Religion)"
@@ -507,15 +446,13 @@ class KnowledgeReligion(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/knowledge-religion"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-
 
 class KnowledgePlanes(Skill):
     
+    def __init__(self, ranks=0):
+        super(KnowledgePlanes, self).__init__("skill/knowledge-planes", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
+        
     @property
     def name(self):
         return "Knowledge (Planes)"
@@ -523,28 +460,24 @@ class KnowledgePlanes(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/knowledge-planes"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
 
 
 class Listen(Skill):
     
+    def __init__(self, ranks=0):
+        super(Listen, self).__init__("skill/listen", ranks)
+        LinkBuilder(self).is_modified_by("wisdom")
+            
     @property
     def name(self):
         return "Listen"
-    
-    def id(self):
-        return "skill/listen"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("wisdom")
 
 
 class MoveSilently(Skill):
+    
+    def __init__(self, ranks=0):
+        super(MoveSilently, self).__init__("skill/move-silently", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
 
     @property
     def name(self):
@@ -554,15 +487,13 @@ class MoveSilently(Skill):
     def armor_check_penalty(self):
         return 1
     
-    def id(self):
-        return "skill/move-silently"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
-
 
 class OpenLock(Skill):
     
+    def __init__(self, ranks=0):
+        super(OpenLock, self).__init__("skill/open-lock", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
+        
     @property
     def name(self):
         return "Open Lock"
@@ -570,35 +501,25 @@ class OpenLock(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/open-lock"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
 
 
 class Perform(Skill):
-
+    
     def __init__(self, qualifier, ranks=0):
-        super(Craft, self).__init__(ranks=ranks)
+        super(Craft, self).__init__("skill/perform-" + qualifier.lower(), ranks=ranks)
+        LinkBuilder(self).is_modified_by("charisma")
         self.qualifier = qualifier
     
     @property
     def name(self):
         return "Perform (%s)" % self.qualifier
-    
-    def id(self):
-        return "skill/perform-" + self.qualifier
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
 
-
+    
 class Profession(Skill):
 
     def __init__(self, qualifier, ranks=0):
-        super(Craft, self).__init__(ranks=ranks)
+        super(Craft, self).__init__("skill/profession-" + self.qualifier.lower(), ranks=ranks)
+        LinkBuilder(self).is_modified_by("wisdom")
         self.qualifier = qualifier
 
     @property
@@ -608,55 +529,47 @@ class Profession(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/profession-" + self.qualifier
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("wisdom")        
-        
+
 
 class Ride(Skill):
     
+    def __init__(self, ranks=0):
+        super(Ride, self).__init__("skill/ride", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
+        
     @property
     def name(self):
         return "Ride"
     
-    def id(self):
-        return "skill/ride"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
-
 
 class Search(Skill):
+
+    def __init__(self, ranks=0):
+        super(Search, self).__init__("skill/search", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
         return "Search"
     
-    def id(self):
-        return "skill/search"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-
 
 class SenseMotive(Skill):
     
+    def __init__(self, ranks=0):
+        super(SenseMotive, self).__init__("skill/sense-motive", ranks)
+        LinkBuilder(self).is_modified_by("wisdom")
+        LinkBuilder(self).modifies("skill/diplomacy", bonus=SynergyModifier(self))
+        
     @property
     def name(self):
         return "Sense Motive"
     
-    def id(self):
-        return "skill/sense-motive"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("wisdom")
-        self.registry.add_action(SynergyAction(self, "skill/diplomacy"))
-        
         
 class SleightOfHand(Skill):
+
+    def __init__(self, ranks=0):
+        super(SleightOfHand, self).__init__("skill/sleight-of-hand", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
     
     @property
     def name(self):
@@ -665,15 +578,13 @@ class SleightOfHand(Skill):
     @property
     def armor_check_penalty(self):
         return 1
-    
-    def id(self):
-        return "skill/sleight-of-hand"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
 
 
 class Spellcraft(Skill):
+
+    def __init__(self, ranks=0):
+        super(Spellcraft, self).__init__("skill/spellcraft", ranks)
+        LinkBuilder(self).is_modified_by("intelligence")
     
     @property
     def name(self):
@@ -683,41 +594,35 @@ class Spellcraft(Skill):
     def untrained(self):
         return False
     
-    def id(self):
-        return "skill/spellcraft"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("intelligence")
-        
 
 class Spot(Skill):
     
+    def __init__(self, ranks=0):
+        super(Spot, self).__init__("skill/spot", ranks)
+        LinkBuilder(self).is_modified_by("wisdom")
+        
     @property
     def name(self):
         return "Spot"
     
-    def id(self):
-        return "skill/spot"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("wisdom")
-
 
 class Survival(Skill):
     
+    def __init__(self, ranks=0):
+        super(Survival, self).__init__("skill/survival", ranks)
+        LinkBuilder(self).is_modified_by("wisdom")
+        LinkBuilder(self).modifies("skill/knowledge-nature", bonus=SynergyModifier(self))
+        
     @property
     def name(self):
         return "Survival"
     
-    def id(self):
-        return "skill/survival"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("wisdom")
-        self.registry.add_action(SynergyAction(self, "skill/knowledge-nature"))
-
 
 class Swim(Skill):
+
+    def __init__(self, ranks=0):
+        super(Swim, self).__init__("skill/swim", ranks)
+        LinkBuilder(self).is_modified_by("strength")
     
     @property
     def name(self):
@@ -727,16 +632,10 @@ class Swim(Skill):
     def armor_check_penalty(self):
         return 2
 
-    def id(self):
-        return "skill/swim"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("strength")
-
 
 class Tumble(Skill):
     
-    def __init__(self, ranks):
+    def __init__(self, ranks=0):
         super(Tumble, self).__init__("skill/tumble", ranks)
         LinkBuilder(self).is_modified_by("dexterity")
         LinkBuilder(self).modifies("skill/balance", "skill/jump", bonus=SynergyModifier(self))
@@ -756,6 +655,10 @@ class Tumble(Skill):
 
 class UseMagicDevice(Skill):
     
+    def __init__(self, ranks=0):
+        super(UseMagicDevice, self).__init__("skill/use-magic-device", ranks)
+        LinkBuilder(self).is_modified_by("charisma")
+        
     @property
     def name(self):
         return "Use Magic Device"
@@ -763,24 +666,21 @@ class UseMagicDevice(Skill):
     @property
     def untrained(self):
         return False
-    
-    def id(self):
-        return "skill/use-magic-device"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("charisma")
 
 
 class UseRope(Skill):
     
+    def __init__(self, ranks=0):
+        super(UseRope, self).__init__("skill/use-rope", ranks)
+        LinkBuilder(self).is_modified_by("dexterity")
+        
     @property
     def name(self):
         return "Use Rope"
     
-    def id(self):
-        return "skill/use-rope"
-    
-    def declare_dependencies(self):
-        self.affected_component_ids.add("dexterity")
 
-    
+def get_all_skill_classes():
+    """Convenience function to return all Skill classes in an iterable."""
+    from inspect import getmembers, getmodule, isclass
+    classes = getmembers(getmodule(Skill), isclass)
+    return [t[1] for t in classes if Skill in t[1].__bases__]
