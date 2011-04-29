@@ -18,6 +18,11 @@ from statblock.base import SizeModifier
 from statblock.base import ValueModifier
 from statblock.base import calculate_modifier_sum
 
+from statblock.skill import get_all_skill_classes
+from statblock.skill import Craft
+from statblock.skill import Perform
+from statblock.skill import Profession
+
 
 class Fortitude(Component):
     
@@ -272,6 +277,10 @@ class Character(Actor):
         self.registry.set(Touch())
         self.registry.set(FlatFooted())
         
+        # skills, adding all found in the skill module
+        for cls in self._base_skills():
+            self.registry.set(cls())
+        
     def configure(self, id, value):
         component = self.registry.get(id)
         if component.is_modifiable():
@@ -284,6 +293,19 @@ class Character(Actor):
     def add_component(self, component):
         self.registry.set(component)
         self.connect_links()
+        
+    def remove_component(self, thing):
+        component = (thing if isinstance(thing, Component) 
+                    else self.registry.get(thing))
+        if component.is_destroyable():
+            for item in component.subcomponents:
+                self.remove_component(item)
+            self.linker.remove(component)
+            self.registry.remove(component.id)
+    
+    # TODO: Implement this!
+    def use_equipment(self, id):
+        pass
         
     def connect_links(self):
         self.linker.process_all()
@@ -309,6 +331,10 @@ class Character(Actor):
             
     def _attribute_to_id(self, name):
         return name.lower().replace("_", "-")
+    
+    def _base_skills(self):
+        is_simple = lambda cls: cls not in (Craft, Perform, Profession)
+        return filter(is_simple, get_all_skill_classes())
             
     
 class ActorBuilder(object):
