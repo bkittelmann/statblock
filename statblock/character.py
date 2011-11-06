@@ -13,6 +13,7 @@ from statblock.base import Component
 from statblock.base import LinkBuilder
 from statblock.base import Modifier
 from statblock.base import NaturalArmorModifier
+from statblock.base import Registry
 from statblock.base import ShieldModifier
 from statblock.base import SizeModifier
 from statblock.base import ValueModifier
@@ -22,6 +23,8 @@ from statblock.skill import get_all_skill_classes
 from statblock.skill import Craft
 from statblock.skill import Perform
 from statblock.skill import Profession
+
+from statblock.equipment import BodySlots
 
 
 class Fortitude(Component):
@@ -245,6 +248,8 @@ class Character(Actor):
 
     def __init__(self, ability_default=10):
         super(Character, self).__init__()
+        self.equipment = Registry()
+        self.slots = BodySlots()
         
         # adding abilities
         self.registry.set(Strength(ability_default))
@@ -303,9 +308,26 @@ class Character(Actor):
             self.linker.remove(component)
             self.registry.remove(component.id)
     
-    # TODO: Implement this!
-    def use_equipment(self, id):
-        pass
+    def add_equipment(self, equipment):
+        self.equipment.set(equipment)
+        
+    def remove_equipment(self, id):
+        self.equipment.remove(id)
+    
+    def activate_equipment(self, id):
+        item = self.equipment.get(id)
+        if item.can_be_added(self.slots):
+            self.slots.add(item)
+            self.linker.apply(item)
+            self.linker.process_all()
+            return True
+        return False
+        
+    def deactivate_equipment(self, id):
+        item = self.equipment.get(id)
+        self.slots.remove(item)
+        self.linker.remove(self.equipment.get(id))
+        self.linker.process_all()
         
     def connect_links(self):
         self.linker.process_all()

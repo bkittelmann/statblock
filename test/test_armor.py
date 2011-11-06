@@ -1,5 +1,3 @@
-import pytest
-
 from statblock.armor import ChainMail
 from statblock.armor import LightSteelShield
 from statblock.armor import HeavySteelShield
@@ -48,18 +46,22 @@ def test_only_armor_low_touch_armor_class():
     assert guard.touch.value == 12
     
 
-@pytest.mark.xfail(reason="need base rewrite")
 def test_that_old_armor_bonus_gets_removed():
     guard = ActorBuilder().build()
 
-    guard.add_component(HeavySteelShield())
+    heavy_shield = HeavySteelShield()
+    guard.add_equipment(heavy_shield)
+    assert guard.activate_equipment(heavy_shield.id)
     assert guard.armor_class.value == 12
 
-    # need to un-use/remove the armor/shield in use by character    
-    guard.add_component(LightSteelShield())
+    light_shield = LightSteelShield()
+    guard.add_equipment(light_shield)
+    
+    guard.deactivate_equipment(heavy_shield.id)
+    assert guard.activate_equipment(light_shield.id)
     assert guard.armor_class.value == 11
     
 
 if __name__ == '__main__':
-    import sys
+    import pytest, sys
     pytest.main(["-s", "-v"] + sys.argv[1:] + [__file__])

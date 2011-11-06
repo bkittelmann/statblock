@@ -3,10 +3,12 @@ from statblock.base import LinkBuilder
 from statblock.base import ArmorModifier
 from statblock.base import NaturalArmorModifier
 from statblock.base import ShieldModifier
+from statblock.equipment import Wearable
 
 
-class Armor(Component):
-
+class Armor(Component, Wearable):
+    slot = "body"
+    
     def __init__(self, id, initial=0):
         super(Armor, self).__init__(id, initial=initial)
         self._default_bonus = ArmorModifier(self)
@@ -24,12 +26,22 @@ class NaturalArmor(Component):
         return False
         
 
-class Shield(Component):
+class Shield(Component, Wearable):
+    slot = ["right-hand", "left-hand"]
 
     def __init__(self, id, initial=0):
         super(Shield, self).__init__(id, initial=initial)
         self._default_bonus = ShieldModifier(self)
         LinkBuilder(self).modifies("armor-class")
+        
+    def find_slot(self, slots):
+        left = slots.get("left-hand")
+        right = slots.get("right-hand")
+        if not left and not isinstance(right, Shield):
+            return ["left-hand"]
+        if not right and not isinstance(left, Shield):
+            return ["right-hand"]
+        return []
         
 
 class ChainMail(Armor):
